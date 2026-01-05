@@ -25,7 +25,7 @@ function SignInPage() {
 
   const onFinish = async (e) => {
     e.preventDefault();
-    
+
     const formData = new FormData(e.target);
     const userInfo = {
       email: formData.get("email"),
