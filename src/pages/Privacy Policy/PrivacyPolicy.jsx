@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { IoChevronBack } from "react-icons/io5";
+import { useCreatePolicyMutation } from "../../redux/api/policy";
+import { message } from "antd";
 
 export default function PrivacyPolicy() {
   const [content, setContent] = useState(
@@ -10,6 +12,16 @@ export default function PrivacyPolicy() {
   );
   const navigate = useNavigate();
 
+  const [createPolicy, { isLoading }] = useCreatePolicyMutation();
+
+  const handleSave = async () => {
+    try {
+      await createPolicy({ description: content }).unwrap();
+      message.success("Privacy Policy saved successfully!");
+    } catch (error) {
+      message.error(error?.data?.message || "Failed to save privacy policy");
+    }
+  };
   return (
     <div className="p-5">
       <div className="bg-blue-600 px-5 py-3 rounded-md mb-3 flex items-center gap-3">
@@ -33,14 +45,13 @@ export default function PrivacyPolicy() {
       </div>
       <div className="text-center py-5 w-full">
         <button
-          onClick={() => console.log(content)}
-          className="bg-blue-600 text-white font-semibold w-full py-2 rounded transition duration-200"
+          onClick={handleSave}
+          disabled={isLoading}
+          className="bg-blue-600 text-white font-semibold w-full py-2 rounded transition duration-200 disabled:opacity-50 cursor-pointer"
         >
-          Save changes
+          {isLoading ? "Saving..." : "Save changes"}
         </button>
       </div>
     </div>
   );
 }
-
-
