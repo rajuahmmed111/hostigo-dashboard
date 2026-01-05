@@ -1,17 +1,58 @@
 import { useState } from "react";
 import { IoEyeOffOutline, IoEyeOutline } from "react-icons/io5";
 import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { useLoginMutation } from "../../redux/api/authApi";
+import { setUser } from "../../redux/features/auth/authSlice";
+import { message } from "antd";
 
 function SignInPage() {
+  const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
   const navigate = useNavigate();
+
+  // api
+  const [login, { isLoading }] = useLoginMutation();
 
   const handleCheckboxChange = (event) => {
     if (event.target.checked) {
       setIsChecked(true);
     } else {
       setIsChecked(false);
+    }
+  };
+
+  const onFinish = async (e) => {
+    e.preventDefault();
+    
+    const formData = new FormData(e.target);
+    const userInfo = {
+      email: formData.get("email"),
+      password: formData.get("password"),
+    };
+
+    try {
+      const response = await login(userInfo).unwrap();
+
+      if (response?.data?.accessToken) {
+        const fullData = {
+          user: response.data.user,
+          token: response.data.accessToken,
+          refreshToken: response.data.refreshToken,
+        };
+
+        localStorage.setItem("accessToken", response.data.accessToken);
+        localStorage.setItem("refreshToken", response.data.refreshToken);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+
+        dispatch(setUser(fullData));
+        navigate("/");
+        message.success("Login Successfully!");
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      message.error(error?.data?.message || "Login failed!");
     }
   };
 
@@ -23,7 +64,7 @@ function SignInPage() {
             <div className="flex justify-center items-center mb-10">
               <img src="/logo.png" alt="" />
             </div>
-            <form className="space-y-5">
+            <form className="space-y-5" onSubmit={onFinish}>
               <div className="w-full">
                 <label className="text-xl text-blue-600 mb-2 font-bold">
                   Email
@@ -51,12 +92,12 @@ function SignInPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 bottom-4 flex items-center text-blue-600"
+                    className="absolute right-3 bottom-4 flex items-center text-blue-600 cursor-pointer"
                   >
                     {showPassword ? (
-                      <IoEyeOffOutline className="w-5 h-5" />
+                      <IoEyeOffOutline className="w-5 h-5 cursor-pointer" />
                     ) : (
-                      <IoEyeOutline className="w-5 h-5" />
+                      <IoEyeOutline className="w-5 h-5 cursor-pointer" />
                     )}
                   </button>
                 </div>
@@ -128,11 +169,11 @@ function SignInPage() {
               </div>
               <div className="flex justify-center items-center">
                 <button
-                  onClick={() => navigate("/")}
-                  type="button"
-                  className="w-1/3 bg-blue-600 text-white font-bold py-3 rounded-lg shadow-lg cursor-pointer mt-5"
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-1/3 bg-blue-600 text-white font-bold py-3 rounded-lg shadow-lg cursor-pointer mt-5 disabled:opacity-50"
                 >
-                  Log In
+                  {isLoading ? "Logging in..." : "Log In"}
                 </button>
               </div>
             </form>
