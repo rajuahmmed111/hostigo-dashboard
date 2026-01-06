@@ -230,7 +230,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       {/* Logout Button */}
       <div className="absolute mt-8 md:mt-20 mmd:mt-20 w-full px-5 text-blue-600">
         <Link to="/sign-in">
-          <button 
+          <button
             onClick={handleLogout}
             disabled={isLoading}
             className="flex items-center gap-4 w-full py-3 rounded-lg bg-blue-600 px-3 duration-200 text-white justify-center cursor-pointer disabled:opacity-50"
