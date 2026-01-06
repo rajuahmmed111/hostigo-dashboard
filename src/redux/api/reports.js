@@ -6,7 +6,7 @@ export const reportsApi = baseApi.injectEndpoints({
     // get all reports
     getAllReports: builder.query({
       query: ({ page = 1, limit = 10 }) => ({
-        url: `/supports?page=${page}&limit=${limit}`,
+        url: `/reports?page=${page}&limit=${limit}`,
         method: "GET",
         headers: {
           Authorization: `${localStorage.getItem("accessToken")}`,

@@ -1,16 +1,52 @@
-import { ConfigProvider, Modal, Table } from "antd";
-import { useState } from "react";
-import { IoSearch, IoChevronBack } from "react-icons/io5";
+import { ConfigProvider, Modal, Table, message, Pagination } from "antd";
+import { useState, useMemo } from "react";
+import { IoChevronBack } from "react-icons/io5";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { FaRegEye } from "react-icons/fa";
-import { BiMessage } from "react-icons/bi";
 import { useNavigate } from "react-router-dom";
+import {
+  useDeleteReportMutation,
+  useGetAllReportsQuery,
+} from "../../redux/api/reports";
 
 function Reports() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
   const navigate = useNavigate();
+
+  // API call to get all reports
+  const { data: reportsData, isLoading } = useGetAllReportsQuery({
+    page: currentPage,
+    limit: 10,
+  });
+
+  // Delete mutation
+  const [deleteReport, { isLoading: isDeleting }] = useDeleteReportMutation();
+
+  // transform API data to table format
+  const dataSource = useMemo(() => {
+    if (!reportsData?.data) return [];
+
+    // Handle different response structures
+    const reports = Array.isArray(reportsData.data)
+      ? reportsData.data
+      : reportsData.data.data || [];
+
+    return reports.map((report, index) => ({
+      key: report.id || String(index + 1),
+      no: String(index + 1),
+      reportFrom: report.user?.fullName || "Unknown User",
+      reportReason: report.subject,
+      reportTo: report.reportedUser?.fullName || "Unknown User",
+      date: new Date(report.createdAt).toLocaleDateString(),
+      user: report.user,
+      reportedUser: report.reportedUser,
+      type: report.supportType,
+      description: report.description,
+    }));
+  }, [reportsData]);
 
   const showModal = (user) => {
     setSelectedUser(user);
@@ -29,88 +65,25 @@ function Reports() {
     setIsViewModalOpen(false);
     setSelectedUser(null);
   };
-  const dataSource = [
-    {
-      key: "1",
-      no: "1",
-      reportFrom: "John Doe",
-      reportReason: "Harassment in comments.",
-      reportTo: "Emily Johnson",
-      date: "2023-06-15",
-    },
-    {
-      key: "2",
-      no: "2",
-      reportFrom: "Jane Smith",
-      reportReason: "Spam links posted.",
-      reportTo: "Michael Wilson",
-      date: "2023-06-15",
-    },
-    {
-      key: "3",
-      no: "3",
-      reportFrom: "Robert Brown",
-      reportReason: "Fake event details.",
-      reportTo: "Lucas Hall",
-      date: "2023-06-15",
-    },
-    {
-      key: "4",
-      no: "4",
-      reportFrom: "Olivia Thomas",
-      reportReason: "Explicit images shared.",
-      reportTo: "William Anderson",
-      date: "2023-06-15",
-    },
-    {
-      key: "5",
-      no: "5",
-      reportFrom: "James Martinez",
-      reportReason: "Political misinformation.",
-      reportTo: "News Feed",
-      date: "2023-06-15",
-    },
-    {
-      key: "6",
-      no: "6",
-      reportFrom: "Sophia Taylor",
-      reportReason: "Impersonation attempt.",
-      reportTo: "User Profile",
-      date: "2023-06-15",
-    },
-    {
-      key: "7",
-      no: "7",
-      reportFrom: "Ethan Harris",
-      reportReason: "Offensive language.",
-      reportTo: "Group Chat",
-      date: "2023-06-15",
-    },
-    {
-      key: "8",
-      no: "8",
-      reportFrom: "Charlotte Clark",
-      reportReason: "Crypto spam.",
-      reportTo: "Dashboard",
-      date: "2023-06-15",
-    },
-    {
-      key: "9",
-      no: "9",
-      reportFrom: "Henry Young",
-      reportReason: "Extremist content.",
-      reportTo: "News Section",
-      date: "2023-06-15",
-    },
-    {
-      key: "10",
-      no: "10",
-      reportFrom: "Harper King",
-      reportReason: "Violent images.",
-      reportTo: "Gallery",
-      date: "2023-06-15",
-    },
-  ];
+
+  // Pagination handlers
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  // Delete handler
+  const handleDelete = async () => {
+    if (selectedUser?.key) {
+      try {
+        await deleteReport(selectedUser.key).unwrap();
+        message.success("Report deleted successfully!");
+        setIsModalOpen(false);
+        setSelectedUser(null);
+      } catch (error) {
+        message.error(error?.data?.message || "Failed to delete report");
+      }
+    }
+  };
 
   const columns = [
     {
@@ -123,11 +96,13 @@ function Reports() {
       key: "reportFrom",
       render: (_, record) => (
         <div className="flex items-center gap-3">
-          <img
-            src={`https://avatar.iran.liara.run/public/${record.key}`}
-            className="w-10 h-10 object-cover rounded-full"
-            alt="User Avatar"
-          />
+          {record.user?.profileImage && (
+            <img
+              src={record.user.profileImage}
+              className="w-10 h-10 object-cover rounded-full"
+              alt="User Avatar"
+            />
+          )}
           <div className="flex flex-col gap-[2px]">
             <span className="leading-none">{record.reportFrom}</span>
           </div>
@@ -144,11 +119,13 @@ function Reports() {
       key: "reportTo",
       render: (_, record) => (
         <div className="flex items-center gap-3">
-          <img
-            src={`https://avatar.iran.liara.run/public/${record.key}`}
-            className="w-10 h-10 object-cover rounded-full"
-            alt="User Avatar"
-          />
+          {record.reportedUser?.profileImage && (
+            <img
+              src={record.reportedUser.profileImage}
+              className="w-10 h-10 object-cover rounded-full"
+              alt="User Avatar"
+            />
+          )}
           <div className="flex flex-col gap-[2px]">
             <span className="leading-none">{record.reportTo}</span>
           </div>
@@ -165,7 +142,11 @@ function Reports() {
       key: "action",
       render: (_, record) => (
         <div className="flex gap-2">
-<button className="" onClick={() => showViewModal(record)}>
+          {/* <button className="" onClick={() => navigate("/chat")}>
+            <LuMessageSquareText className=" w-5 h-5 cursor-pointer rounded-md" />
+          </button> */}
+
+          <button className="" onClick={() => showViewModal(record)}>
             <FaRegEye className="text-[#111827] w-5 h-5 cursor-pointer rounded-md" />
           </button>
           <button className="" onClick={() => showModal(record)}>
@@ -175,7 +156,6 @@ function Reports() {
       ),
     },
   ];
-
   return (
     <div>
       <div className="bg-[#2563eb] px-5 py-3 rounded-md mb-3 flex items-center gap-3">
@@ -215,9 +195,27 @@ function Reports() {
         <Table
           dataSource={dataSource}
           columns={columns}
-          pagination={{ pageSize: 10 }}
+          loading={isLoading}
+          pagination={false}
           scroll={{ x: "max-content" }}
         />
+
+        {/* Custom Pagination */}
+        {reportsData?.data?.totalPages > 1 && (
+          <div className="flex justify-center mt-6">
+            <Pagination
+              current={currentPage}
+              total={reportsData.data.total || 0}
+              pageSize={10}
+              onChange={handlePageChange}
+              showSizeChanger={false}
+              showQuickJumper
+              showTotal={(total, range) =>
+                `${range[0]}-${range[1]} of ${total} items`
+              }
+            />
+          </div>
+        )}
         {/* Delete Modal */}
         <Modal
           open={isModalOpen}
@@ -230,14 +228,15 @@ function Reports() {
               Are you sure!
             </h1>
             <p className="text-xl text-center mt-5">
-              Do you want to delete this user profile?
+              Do you want to delete this report?
             </p>
             <div className="text-center py-5 w-full">
               <button
-                onClick={() => setIsModalOpen(false)}
-                className="bg-red-500 hover:bg-red-600 text-white font-semibold w-1/3 py-3 px-5 rounded-lg transition-colors"
+                onClick={handleDelete}
+                disabled={isDeleting}
+                className="bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white font-semibold w-1/3 py-3 px-5 rounded-lg transition-colors cursor-pointer"
               >
-                CONFIRM
+                {isDeleting ? "DELETING..." : "CONFIRM"}
               </button>
             </div>
           </div>
@@ -386,8 +385,8 @@ function Reports() {
                       <br />
                       <br />
                       <strong>Category:</strong> This report has been classified
-                      as "{selectedUser.type}". Further investigation is
-                      required to determine the appropriate action.
+                      as &quot;{selectedUser.type}&quot;. Further investigation
+                      is required to determine the appropriate action.
                     </p>
                   </div>
                 </div>
@@ -397,7 +396,7 @@ function Reports() {
               <div className="flex justify-end items-center mt-8 pt-6 border-t border-gray-200">
                 <button
                   onClick={handleViewCancel}
-                  className="bg-blue-600 text-white font-semibold px-8 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                  className="bg-blue-600 text-white font-semibold px-8 py-2 rounded-lg hover:bg-gray-600 transition-colors cursor-pointer"
                 >
                   Close
                 </button>
