@@ -1,25 +1,47 @@
 /* eslint-disable react/prop-types */
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { RxDashboard } from "react-icons/rx";
 import { LuUsers } from "react-icons/lu";
-import { TbBrandWechat, TbReport } from "react-icons/tb";
+import { TbReport } from "react-icons/tb";
 import { IoMdSettings } from "react-icons/io";
 import { IoCloseSharp, IoLogOutOutline } from "react-icons/io5";
-import {
-  MdAdminPanelSettings,
-  MdLocalHospital,
-  MdOutlineAssignment,
-  MdOutlineInventory2,
-} from "react-icons/md";
-import { RiFlaskLine } from "react-icons/ri";
-import { BsReceipt, BsCurrencyDollar, BsBookmarkCheck, BsGrid1X2, BsTruck, BsBox, BsCreditCard } from "react-icons/bs";
-import { BiCategory } from "react-icons/bi";
+import { MdAdminPanelSettings } from "react-icons/md";
+
+import { BsCurrencyDollar, BsCreditCard } from "react-icons/bs";
+import { BiCategory, BiChat } from "react-icons/bi";
+import { logout } from "../../redux/features/auth/authSlice";
+import { useLogoutMutation } from "../../redux/api/authApi";
+import { message } from "antd";
+import { useDispatch } from "react-redux";
 
 const Sidebar = ({ isOpen, toggleSidebar }) => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const [logoutApi, { isLoading }] = useLogoutMutation();
   const currentPath = location.pathname;
   const isActive = (path) => currentPath === path;
-  
+
+  const handleLogout = async () => {
+    try {
+      await logoutApi().unwrap();
+      dispatch(logout());
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("user");
+      navigate("/sign-in");
+      message.success("Logged out successfully!");
+    } catch {
+      // Even if API fails, clear local data and logout
+      dispatch(logout());
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("user");
+      navigate("/sign-in");
+      message.success("Logged out successfully!");
+    }
+  };
+
   // Close sidebar when a link is clicked on mobile
   const handleLinkClick = () => {
     if (window.innerWidth < 1024) {
@@ -46,7 +68,11 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
       {/* Logo */}
       <div className="flex justify-center items-center gap-2 px-5 mt-20">
-        <img src="/logo.png" className="w-[120px] h-[100px]" alt="User Avatar" />
+        <img
+          src="/logo.png"
+          className="w-[120px] h-[100px]"
+          alt="User Avatar"
+        />
       </div>
 
       {/* Sidebar Menu */}
@@ -106,7 +132,6 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           </li>
         </Link>
 
-        
         {/* Categories */}
         <Link to="/categories" onClick={handleLinkClick}>
           <li
@@ -120,7 +145,6 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             <p className="text-lg font-semibold">Categories</p>
           </li>
         </Link>
-
 
         {/* Lab Management */}
         {/* <Link to="/payment-management" onClick={handleLinkClick}>
@@ -149,8 +173,8 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             <p className="text-lg font-semibold">Invoices</p>
           </li>
         </Link> */}
-        
-         <Link to="/chat" onClick={handleLinkClick}>
+
+        <Link to="/chat" onClick={handleLinkClick}>
           <li
             className={`flex items-center gap-2 mt-2 cursor-pointer transition-all duration-300 ease-in-out ${
               isActive("/chat")
@@ -158,11 +182,10 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
                 : "hover:bg-gray-100 px-3 py-3 rounded-lg"
             }`}
           >
-            <BiCategory className="w-5 h-5" />
+            <BiChat className="w-5 h-5" />
             <p className="text-lg font-semibold">Chat</p>
           </li>
         </Link>
-
 
         {/* Create Admin */}
         <Link to="/create-admin">
@@ -178,7 +201,6 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           </li>
         </Link>
 
-      
         <Link to="/reports">
           <li
             className={`flex items-center gap-2 mt-5 cursor-pointer transition-all duration-300 ease-in-out ${
@@ -208,7 +230,11 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
       {/* Logout Button */}
       <div className="absolute mt-8 md:mt-20 mmd:mt-20 w-full px-5 text-blue-600">
         <Link to="/sign-in">
-          <button className="flex items-center gap-4 w-full py-3 rounded-lg bg-blue-600  px-3 duration-200 text-white justify-center ">
+          <button 
+            onClick={handleLogout}
+            disabled={isLoading}
+            className="flex items-center gap-4 w-full py-3 rounded-lg bg-blue-600 px-3 duration-200 text-white justify-center cursor-pointer disabled:opacity-50"
+          >
             <IoLogOutOutline className="w-5 h-5 font-bold" />
             <span>Logout</span>
           </button>
