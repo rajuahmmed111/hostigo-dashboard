@@ -14,6 +14,7 @@ export const reportsApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Reports"],
     }),
+    
     // delete report
     deleteReport: builder.mutation({
       query: (id) => ({
