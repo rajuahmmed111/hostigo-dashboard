@@ -32,8 +32,36 @@ export const subscriptionApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Subscription"],
     }),
+
+    // get all subscription plans
+    getAllSubscriptionPlans: builder.query({
+      query: () => ({
+        url: `/subscriptions/plans`,
+        method: "GET",
+        headers: {
+          Authorization: `${localStorage.getItem("accessToken")}`,
+        },
+      }),
+      providesTags: ["SubscriptionPlan"],
+    }),
+
+    // search subscription plans
+    searchSubscriptionPlans: builder.query({
+      query: () => ({
+        url: `/subscriptions/plan/retrieve/search`,
+        method: "GET",
+        headers: {
+          Authorization: `${localStorage.getItem("accessToken")}`,
+        },
+      }),
+      providesTags: ["SubscriptionPlan"],
+    }),
   }),
 });
 
-export const { useGetAllSubscriptionsQuery, useCancelSubscriptionMutation } =
-  subscriptionApi;
+export const {
+  useGetAllSubscriptionsQuery,
+  useCancelSubscriptionMutation,
+  useGetAllSubscriptionPlansQuery,
+  useSearchSubscriptionPlansQuery,
+} = subscriptionApi;

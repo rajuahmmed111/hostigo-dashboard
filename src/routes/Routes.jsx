@@ -22,6 +22,7 @@ import Earnings from "../pages/Earnings/Earnings";
 import Notifications from "../pages/Notifications/Notifications";
 import Subscriptions from "../pages/subscriptions/Subscriptions";
 import Chat from "../pages/chat/Chat";
+import SubscriptionPlans from "../pages/Subscription Plans/SubscriptionPlans";
 
 const router = createBrowserRouter([
   {
@@ -99,10 +100,6 @@ const router = createBrowserRouter([
         element: <AddAdmin />,
       },
       {
-        path: "/chat",
-        element: <Chat />,
-      },
-      {
         path: "/notifications",
         element: <Notifications />,
       },
@@ -110,23 +107,26 @@ const router = createBrowserRouter([
         path: "/profile",
         element: <ProfilePage />,
       },
-  
       {
-        path:"/categories",
-        element:<Categories/>
+        path: "/categories",
+        element: <Categories />,
       },
       {
-        path:"/earnings",
-        element:<Earnings/>
+        path: "/earnings",
+        element: <Earnings />,
       }, 
       {
-        path:"/subscriptions",
-        element:<Subscriptions/>
+        path: "/subscriptions",
+        element: <Subscriptions />,
       }, 
-      // {
-      //   path:"/chat",
-      //   element:<Chat/>
-      // },
+      {
+        path: "/subscription-plans",
+        element: <SubscriptionPlans />,
+      },
+      {
+        path: "/chat",
+        element: <Chat />,
+      },
     ],
   },
 ]);
