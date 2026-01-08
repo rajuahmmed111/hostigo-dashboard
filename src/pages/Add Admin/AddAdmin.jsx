@@ -38,7 +38,7 @@ export default function AddAdmin() {
       <div className="bg-blue-600 text-[white] px-5 py-3 rounded-md mb-3 flex items-center gap-3">
         <button
           onClick={() => navigate(-1)}
-          className="text-white hover:opacity-90 transition"
+          className="text-white hover:opacity-90 transition cursor-pointer"
           aria-label="Go back"
         >
           <IoChevronBack className="w-6 h-6" />
@@ -112,7 +112,7 @@ export default function AddAdmin() {
             </div>
           </div>
 
-          <div>
+          {/* <div>
             <label className="block text-sm font-semibold text-blue-600 mb-1">Profile Image</label>
             <div
               className="w-full border border-gray-300 rounded-md px-4 py-8 flex flex-col items-center justify-center text-gray-500 bg-gray-50"
@@ -129,7 +129,7 @@ export default function AddAdmin() {
               )}
               <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageChange} className="hidden" />
             </div>
-          </div>
+          </div> */}
 
           <div className="pt-2">
             <button type="submit" className="w-full bg-blue-600 text-white font-semibold py-3 rounded-md">
