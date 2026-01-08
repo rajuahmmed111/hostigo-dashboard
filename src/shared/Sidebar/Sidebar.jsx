@@ -8,7 +8,7 @@ import { IoCloseSharp, IoLogOutOutline } from "react-icons/io5";
 import { MdAdminPanelSettings } from "react-icons/md";
 
 import { BsCurrencyDollar, BsCreditCard } from "react-icons/bs";
-import { BiCategory, BiChat } from "react-icons/bi";
+import { BiChat } from "react-icons/bi";
 import { logout } from "../../redux/features/auth/authSlice";
 import { useLogoutMutation } from "../../redux/api/authApi";
 import { message } from "antd";
@@ -133,7 +133,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         </Link>
 
         {/* Categories */}
-        <Link to="/categories" onClick={handleLinkClick}>
+        {/* <Link to="/categories" onClick={handleLinkClick}>
           <li
             className={`flex items-center gap-2 mt-2 cursor-pointer transition-all duration-300 ease-in-out ${
               isActive("/categories")
@@ -144,7 +144,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             <BiCategory className="w-5 h-5" />
             <p className="text-lg font-semibold">Categories</p>
           </li>
-        </Link>
+        </Link> */}
 
         {/* Lab Management */}
         {/* <Link to="/payment-management" onClick={handleLinkClick}>
