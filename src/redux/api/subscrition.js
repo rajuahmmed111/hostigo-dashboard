@@ -5,15 +5,22 @@ export const subscriptionApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // get all subscriptions
     getAllSubscriptions: builder.query({
-      query: () => ({
-        url: "/subscriptions/purchase-subscription",
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      }),
+      query: ({ status }) => {
+        const params = new URLSearchParams();
+        if (status) params.append("status", status);
+        return {
+          url: `/subscriptions/purchase-subscription${
+            params.toString() ? "?" + params.toString() : ""
+          }`,
+          method: "GET",
+          headers: {
+            Authorization: `${localStorage.getItem("accessToken")}`,
+          },
+        };
+      },
       providesTags: ["Subscription"],
     }),
+
     // cancel subscription
     cancelSubscription: builder.mutation({
       query: (id) => ({

@@ -1,56 +1,86 @@
-import { ConfigProvider, Modal, Table, Select } from "antd";
+import { ConfigProvider, Modal, Table, Select, Pagination } from "antd";
 import { useState } from "react";
 import { IoChevronBack, IoEyeOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
+import { useGetAllSubscriptionsQuery } from "../../redux/api/subscrition";
 
 function Subscriptions() {
   const navigate = useNavigate();
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedSubscription, setSelectedSubscription] = useState(null);
   const [statusFilter, setStatusFilter] = useState();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
-  const showViewModal = (subscription) => {
-    setSelectedSubscription(subscription);
-    setIsViewModalOpen(true);
+  // Convert frontend status to backend status
+  const getBackendStatus = (frontendStatus) => {
+    switch (frontendStatus) {
+      case "Active":
+        return "ACTIVE";
+      case "Expired":
+        return "INACTIVE";
+      case "Cancelled":
+        return "CANCELED";
+      default:
+        return frontendStatus;
+    }
   };
 
-  const handleViewCancel = () => {
-    setIsViewModalOpen(false);
-    setSelectedSubscription(null);
+  // API call to get all subscriptions with filtering only
+  const { data: subscriptionsData, isLoading } = useGetAllSubscriptionsQuery({
+    status: statusFilter ? getBackendStatus(statusFilter) : undefined,
+  });
+
+  // Transform API data to table format
+  const allData =
+    subscriptionsData?.data?.map((subscription) => {
+      return {
+        key: subscription.id,
+        name: subscription.plan?.name || "Unknown Plan",
+        user: subscription.user?.fullName || "Unknown User",
+        status:
+          subscription.status === "ACTIVE"
+            ? "Active"
+            : subscription.status === "CANCELED"
+            ? "Cancelled"
+            : "Expired",
+        price: `${subscription.plan?.price?.currency || "$"}${
+          subscription.plan?.price?.amount || 0
+        }`,
+        startDate: new Date(subscription.startDate).toLocaleDateString(),
+        endDate: new Date(subscription.endDate).toLocaleDateString(),
+        paymentMethod: "Credit Card", // Default since not in API response
+        originalData: subscription,
+      };
+    }) || [];
+
+  // Client-side filtering as fallback if backend doesn't filter
+  const filteredData = statusFilter
+    ? allData.filter((item) => item.status === statusFilter)
+    : allData;
+
+  // Client-side pagination
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const dataSource = filteredData.slice(startIndex, endIndex);
+
+  // Handle page change
+  const handlePageChange = (page, size) => {
+    setCurrentPage(page);
+    if (size !== pageSize) {
+      setPageSize(size);
+      setCurrentPage(1); // Reset to first page when page size changes
+    }
   };
 
-  const dataSource = [
-    {
-      key: "1",
-      name: "Premium Plan",
-      user: "John Doe",
-      status: "Active",
-      price: "$29.99",
-      startDate: "2024-01-12",
-      endDate: "2025-01-12",
-      paymentMethod: "Credit Card",
-    },
-    {
-      key: "2",
-      name: "Basic Plan",
-      user: "Emma Smith",
-      status: "Expired",
-      price: "$9.99",
-      startDate: "2024-02-15",
-      endDate: "2024-05-15",
-      paymentMethod: "PayPal",
-    },
-    {
-      key: "3",
-      name: "Pro Plan",
-      user: "Liam Johnson",
-      status: "Active",
-      price: "$49.99",
-      startDate: "2024-03-20",
-      endDate: "2025-03-20",
-      paymentMethod: "Bank Transfer",
-    },
-  ];
+  // Handle status filter change
+  const handleStatusFilterChange = (value) => {
+    setStatusFilter(value);
+    setCurrentPage(1); // Reset to first page when filter changes
+  };
+
+  // Calculate total items for pagination
+  const totalItems = filteredData.length;
 
   const columns = [
     {
@@ -116,10 +146,15 @@ function Subscriptions() {
     },
   ];
 
-  const filteredData = dataSource.filter((r) => {
-    const matchStatus = statusFilter ? r.status === statusFilter : true;
-    return matchStatus;
-  });
+  const showViewModal = (subscription) => {
+    setSelectedSubscription(subscription);
+    setIsViewModalOpen(true);
+  };
+
+  const handleViewCancel = () => {
+    setIsViewModalOpen(false);
+    setSelectedSubscription(null);
+  };
 
   return (
     <div>
@@ -139,7 +174,7 @@ function Subscriptions() {
           <Select
             placeholder="Filter by status"
             allowClear
-            onChange={setStatusFilter}
+            onChange={handleStatusFilterChange}
             className="w-full md:w-40"
             options={[
               { value: "Active", label: "Active" },
@@ -164,12 +199,29 @@ function Subscriptions() {
         }}
       >
         <Table
-          dataSource={filteredData}
+          dataSource={dataSource}
           columns={columns}
-          pagination={{ pageSize: 10 }}
+          loading={isLoading}
+          pagination={false}
           scroll={{ x: "max-content" }}
           rowClassName="hover:bg-gray-50 cursor-pointer"
         />
+
+        {/* Custom Pagination */}
+        <div className="flex justify-end mt-4">
+          <Pagination
+            current={currentPage}
+            total={totalItems}
+            pageSize={pageSize}
+            onChange={handlePageChange}
+            onShowSizeChange={handlePageChange}
+            showSizeChanger
+            showQuickJumper
+            showTotal={(total, range) =>
+              `${range[0]}-${range[1]} of ${total} items`
+            }
+          />
+        </div>
 
         {/* View Subscriber Details Modal */}
         <Modal
