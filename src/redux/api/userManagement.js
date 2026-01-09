@@ -14,9 +14,10 @@ export const userManagementApi = baseApi.injectEndpoints({
       }),
       providesTags: ["User"],
     }),
+
     // get users with pagination
     getAllUsersPaginated: builder.query({
-      query: ({ page = 1, limit = 10, role, status }) => {
+      query: ({ page = 1, limit = 10, role, status, searchTerm }) => {
         const queryParams = new URLSearchParams({
           page: page.toString(),
           limit: limit.toString(),
@@ -27,6 +28,9 @@ export const userManagementApi = baseApi.injectEndpoints({
         }
         if (status === "INACTIVE") {
           queryParams.append("status", "INACTIVE");
+        }
+        if (searchTerm && searchTerm.trim()) {
+          queryParams.append("searchTerm", searchTerm.trim());
         }
 
         return {
