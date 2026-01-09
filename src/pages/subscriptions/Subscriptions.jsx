@@ -32,27 +32,49 @@ function Subscriptions() {
   });
 
   // Transform API data to table format
-  const allData =
-    subscriptionsData?.data?.map((subscription) => {
-      return {
-        key: subscription.id,
-        name: subscription.plan?.name || "Unknown Plan",
-        user: subscription.user?.fullName || "Unknown User",
-        status:
-          subscription.status === "ACTIVE"
-            ? "Active"
-            : subscription.status === "CANCELED"
-            ? "Cancelled"
-            : "Expired",
-        price: `${subscription.plan?.price?.currency || "$"}${
-          subscription.plan?.price?.amount || 0
-        }`,
-        startDate: new Date(subscription.startDate).toLocaleDateString(),
-        endDate: new Date(subscription.endDate).toLocaleDateString(),
-        paymentMethod: "Credit Card", // Default since not in API response
-        originalData: subscription,
-      };
-    }) || [];
+  const allData = Array.isArray(subscriptionsData?.data?.data)
+    ? subscriptionsData?.data?.data?.map((subscription) => {
+        return {
+          key: subscription.id,
+          name: subscription.plan?.name || "Unknown Plan",
+          user: subscription.user?.fullName || "Unknown User",
+          status:
+            subscription.status === "ACTIVE"
+              ? "Active"
+              : subscription.status === "CANCELED"
+              ? "Cancelled"
+              : "Expired",
+          price: `${subscription.plan?.price?.currency || "$"}${
+            subscription.plan?.price?.amount || 0
+          }`,
+          startDate: new Date(subscription.startDate).toLocaleDateString(),
+          endDate: new Date(subscription.endDate).toLocaleDateString(),
+          paymentMethod: "Credit Card", // Default since not in API response
+          originalData: subscription,
+        };
+      })
+    : Array.isArray(subscriptionsData?.data)
+    ? subscriptionsData?.data?.map((subscription) => {
+        return {
+          key: subscription.id,
+          name: subscription.plan?.name || "Unknown Plan",
+          user: subscription.user?.fullName || "Unknown User",
+          status:
+            subscription.status === "ACTIVE"
+              ? "Active"
+              : subscription.status === "CANCELED"
+              ? "Cancelled"
+              : "Expired",
+          price: `${subscription.plan?.price?.currency || "$"}${
+            subscription.plan?.price?.amount || 0
+          }`,
+          startDate: new Date(subscription.startDate).toLocaleDateString(),
+          endDate: new Date(subscription.endDate).toLocaleDateString(),
+          paymentMethod: "Credit Card", // Default since not in API response
+          originalData: subscription,
+        };
+      })
+    : [];
 
   // Client-side filtering as fallback if backend doesn't filter
   const filteredData = statusFilter
