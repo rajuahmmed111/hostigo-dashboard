@@ -152,7 +152,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               }`}
             >
               <BsCreditCard className="w-5 h-5" />
-              <p className="text-lg font-semibold">Subscription Plans</p>
+              <p className="text-lg font-semibold">Subscriptions</p>
             </li>
           </Link>
 
