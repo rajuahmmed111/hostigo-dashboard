@@ -136,7 +136,9 @@ function SubscriptionPlans() {
     } catch (error) {
       // Handle specific database constraint errors
       if (error?.err?.code === "P2014") {
-        message.error("Cannot delete this plan because it's linked to active subscriptions. Please deactivate subscriptions first.");
+        message.error(
+          "Cannot delete this plan because it's linked to active subscriptions. Please deactivate subscriptions first."
+        );
       } else {
         message.error(error?.data?.message || "Failed to delete plan");
       }
