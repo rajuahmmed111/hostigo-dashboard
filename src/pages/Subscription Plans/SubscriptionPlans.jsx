@@ -1,49 +1,35 @@
-import { ConfigProvider, Modal, Table, Input, Button } from "antd";
+import { ConfigProvider, Modal, Table, Button } from "antd";
 import { useState } from "react";
-import {
-  IoChevronBack,
-  IoEyeOutline,
-  IoSearch,
-  IoAddOutline,
-} from "react-icons/io5";
+import { IoChevronBack, IoEyeOutline, IoAddOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
-import {
-  useGetAllSubscriptionPlansQuery,
-  useSearchSubscriptionPlansQuery,
-} from "../../redux/api/subscrition";
+import { useGetAllSubscriptionPlansQuery } from "../../redux/api/subscrition";
+import { FiEdit2 } from "react-icons/fi";
+import { RiDeleteBin6Line } from "react-icons/ri";
 
 function SubscriptionPlans() {
   const navigate = useNavigate();
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
 
-  // API calls
+  // API call
   const { data: plansData, isLoading } = useGetAllSubscriptionPlansQuery();
-  const { data: searchData } = useSearchSubscriptionPlansQuery(searchQuery);
 
-  console.log("plansData", plansData);
-  console.log("searchData", searchData);
-
-  // Use search data if available, otherwise use all plans data
+  // Transform API data to table format
   const dataSource =
-    searchData?.data ||
     plansData?.data?.map((plan) => ({
       key: plan.id,
       name: plan.name || "Unknown Plan",
       price: `${plan.price?.currency || "$"}${plan.price?.amount || 0}`,
-      duration: plan.duration || "Unknown Duration",
-      features: plan.features || "No features specified",
-      status:
-        plan.status === "ACTIVE"
-          ? "Active"
-          : plan.status === "INACTIVE"
-          ? "Inactive"
-          : "Unknown",
-      users: plan.userCount || 0,
+      duration: `${plan.validity?.value || 0} ${
+        plan.validity?.type || "months"
+      }`,
+      features: Array.isArray(plan.features)
+        ? plan.features.join(", ")
+        : plan.features || "No features specified",
+      status: plan.isActive ? "Active" : "Inactive",
+      users: 0, // API doesn't provide user count
       originalData: plan,
-    })) ||
-    [];
+    })) || [];
 
   const showViewModal = (plan) => {
     setSelectedPlan(plan);
@@ -109,6 +95,26 @@ function SubscriptionPlans() {
           >
             <IoEyeOutline className="text-blue-600 w-5 h-5 cursor-pointer" />
           </button>
+          <button
+            className="p-2 hover:bg-gray-100 rounded-md transition-colors"
+            onClick={() => {
+              // Handle edit functionality
+              console.log("Edit plan:", record);
+            }}
+            title="Edit Plan"
+          >
+            <FiEdit2 className="text-blue-600 w-5 h-5 cursor-pointer rounded-md" />
+          </button>
+          <button
+            className="p-2 hover:bg-gray-100 rounded-md transition-colors"
+            onClick={() => {
+              // Handle delete functionality
+              console.log("Delete plan:", record);
+            }}
+            title="Delete Plan"
+          >
+            <RiDeleteBin6Line className="text-red-500 w-5 h-5 cursor-pointer rounded-md" />
+          </button>
         </div>
       ),
     },
@@ -128,26 +134,14 @@ function SubscriptionPlans() {
           Subscription Plans
         </h1>
 
-        {/* Search Bar */}
-        <div className="ml-0 md:ml-auto flex items-center gap-2 w-full md:w-auto mt-2 md:mt-0">
-          <div className="relative">
-            <Input
-              placeholder="Search plans..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-4"
-              prefix={<IoSearch className="text-gray-400" />}
-            />
-          </div>
-          <Button
-            type="primary"
-            onClick={() => navigate("/add-subscription-plan")}
-            className="flex items-center gap-2 whitespace-nowrap"
-            icon={<IoAddOutline className="w-5 h-5" />}
-          >
-            <span>Add Plan</span>
-          </Button>
-        </div>
+        <Button
+          type="primary"
+          onClick={() => navigate("/add-subscription-plan")}
+          className="ml-auto flex items-center gap-2 whitespace-nowrap"
+          icon={<IoAddOutline className="w-5 h-5" />}
+        >
+          <span>Add Plan</span>
+        </Button>
       </div>
 
       <ConfigProvider
@@ -254,18 +248,9 @@ function SubscriptionPlans() {
               <div className="flex justify-end items-center mt-8 pt-6 border-t border-gray-200 gap-3">
                 <button
                   onClick={handleViewCancel}
-                  className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                  className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 cursor-pointer"
                 >
                   Close
-                </button>
-                <button
-                  onClick={() => {
-                    // Handle edit functionality
-                    console.log("Edit plan:", selectedPlan);
-                  }}
-                  className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-                >
-                  Save Changes
                 </button>
               </div>
             </div>
