@@ -21,18 +21,6 @@ export const subscriptionApi = baseApi.injectEndpoints({
       providesTags: ["Subscription"],
     }),
 
-    // cancel subscription
-    cancelSubscription: builder.mutation({
-      query: (id) => ({
-        url: `/subscriptions/${id}`,
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-        },
-      }),
-      invalidatesTags: ["Subscription"],
-    }),
-
     // get all subscription plans
     getAllSubscriptionPlans: builder.query({
       query: () => ({
@@ -44,6 +32,32 @@ export const subscriptionApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Subscription"],
     }),
+
+    // update subscription plan
+    updateSubscriptionPlan: builder.mutation({
+      query: ({ id, ...planData }) => ({
+        url: `/subscriptions/plan/update/${id}`,
+        method: "PATCH",
+        headers: {
+          Authorization: `${localStorage.getItem("accessToken")}`,
+          "Content-Type": "application/json",
+        },
+        body: planData,
+      }),
+      invalidatesTags: ["Subscription"],
+    }),
+
+    // delete subscription plan
+    cancelSubscription: builder.mutation({
+      query: (id) => ({
+        url: `/subscriptions/plan/delete/${id}`,
+        method: "DELETE",
+        headers: {
+          Authorization: `${localStorage.getItem("accessToken")}`,
+        },
+      }),
+      invalidatesTags: ["Subscription"],
+    }),
   }),
 });
 
@@ -51,4 +65,5 @@ export const {
   useGetAllSubscriptionsQuery,
   useCancelSubscriptionMutation,
   useGetAllSubscriptionPlansQuery,
+  useUpdateSubscriptionPlanMutation,
 } = subscriptionApi;
