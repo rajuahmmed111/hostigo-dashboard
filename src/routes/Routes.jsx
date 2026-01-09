@@ -23,6 +23,7 @@ import Notifications from "../pages/Notifications/Notifications";
 import Subscriptions from "../pages/subscriptions/Subscriptions";
 import Chat from "../pages/chat/Chat";
 import SubscriptionPlans from "../pages/Subscription Plans/SubscriptionPlans";
+import AddSubscriptionPlan from "../pages/Subscription Plans/AddSubscriptionPlan";
 
 const router = createBrowserRouter([
   {
@@ -122,6 +123,10 @@ const router = createBrowserRouter([
       {
         path: "/subscription-plans",
         element: <SubscriptionPlans />,
+      },
+      {
+        path: "/add-subscription-plan",
+        element: <AddSubscriptionPlan />,
       },
       {
         path: "/chat",

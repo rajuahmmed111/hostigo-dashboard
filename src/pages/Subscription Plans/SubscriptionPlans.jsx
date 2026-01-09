@@ -240,7 +240,7 @@ function SubscriptionPlans() {
 
         <button
           type="button"
-          onClick={() => navigate("/add-admin")}
+          onClick={() => navigate("/add-subscription-plan")}
           className="ml-auto bg-white text-blue-600 px-3 py-1 rounded-md font-semibold flex items-center gap-2 hover:opacity-95 transition cursor-pointer"
         >
           <IoAddOutline className="w-4 h-4" />

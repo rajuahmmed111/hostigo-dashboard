@@ -33,6 +33,20 @@ export const subscriptionApi = baseApi.injectEndpoints({
       providesTags: ["Subscription"],
     }),
 
+    // create subscription plan
+    createSubscriptionPlan: builder.mutation({
+      query: (planData) => ({
+        url: `/subscriptions/plan/create`,
+        method: "POST",
+        headers: {
+          Authorization: `${localStorage.getItem("accessToken")}`,
+          "Content-Type": "application/json",
+        },
+        body: planData,
+      }),
+      invalidatesTags: ["Subscription"],
+    }),
+
     // update subscription plan
     updateSubscriptionPlan: builder.mutation({
       query: ({ id, ...planData }) => ({
@@ -66,4 +80,5 @@ export const {
   useCancelSubscriptionMutation,
   useGetAllSubscriptionPlansQuery,
   useUpdateSubscriptionPlanMutation,
+  useCreateSubscriptionPlanMutation,
 } = subscriptionApi;
