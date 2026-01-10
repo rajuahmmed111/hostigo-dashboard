@@ -1,11 +1,19 @@
 import { ConfigProvider, List, Button } from "antd";
 import { IoChevronBack } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
-import { useGetAllNotificationsQuery } from "../../redux/api/notification";
+import {
+  useGetAllNotificationsQuery,
+  useMarkAsReadMutation,
+  useMarkAllAsReadMutation,
+  useMarkAsUnreadMutation,
+} from "../../redux/api/notification";
 
 export default function Notifications() {
   const navigate = useNavigate();
   const { data: notificationsData, isLoading } = useGetAllNotificationsQuery();
+  const [markAsRead] = useMarkAsReadMutation();
+  const [markAllAsRead] = useMarkAllAsReadMutation();
+  const [markAsUnread] = useMarkAsUnreadMutation();
 
   // Format time ago
   const formatTimeAgo = (dateString) => {
@@ -31,14 +39,24 @@ export default function Notifications() {
       description: notif.message || notif.body,
     })) || [];
 
-  const markRead = (id, read = true) => {
-    // TODO: Implement API call to mark notification as read
-    console.log("Mark notification", id, read ? "read" : "unread");
+  const markRead = async (id, read = true) => {
+    try {
+      if (read) {
+        await markAsRead(id).unwrap();
+      } else {
+        await markAsUnread(id).unwrap();
+      }
+    } catch (error) {
+      console.error("Failed to mark notification:", error);
+    }
   };
 
-  const markAllRead = () => {
-    // TODO: Implement API call to mark all notifications as read
-    console.log("Mark all notifications as read");
+  const markAllRead = async () => {
+    try {
+      await markAllAsRead().unwrap();
+    } catch (error) {
+      console.error("Failed to mark all notifications as read:", error);
+    }
   };
 
   return (
