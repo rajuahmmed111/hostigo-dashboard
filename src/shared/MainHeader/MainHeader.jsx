@@ -1,35 +1,14 @@
 /* eslint-disable react/prop-types */
-
-import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { IoMenu, IoNotificationsOutline, IoChatbubbleEllipses, IoClose } from "react-icons/io5";
-import Chat from "../../pages/chat/Chat";
+import { IoMenu, IoNotificationsOutline } from "react-icons/io5";
+// import Chat from "../../pages/chat/Chat";
+import { useSelector } from "react-redux";
+import { useGetMyProfileQuery } from "../../redux/api/authApi";
 
 const MainHeader = ({ toggleSidebar }) => {
   const navigate = useNavigate();
-  const [showChat, setShowChat] = useState(false);
-  const chatRef = useRef(null);
-
-  // Close chat when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (chatRef.current && !chatRef.current.contains(event.target)) {
-        // Check if the click is not on the chat icon
-        if (!event.target.closest('.chat-icon-button')) {
-          setShowChat(false);
-        }
-      }
-    }
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
-
-  const toggleChat = () => {
-    setShowChat(!showChat);
-  };
+  const { user } = useSelector((state) => state.auth);
+  const { data: profileData } = useGetMyProfileQuery();
 
   return (
     <div className="relative w-full px-5">
@@ -47,11 +26,13 @@ const MainHeader = ({ toggleSidebar }) => {
             <button
               type="button"
               aria-label="Notifications"
-              onClick={() => navigate('/notifications')}
+              onClick={() => navigate("/notifications")}
               className="relative p-2 rounded-full border border-blue-600 hover:bg-white/60 transition"
             >
               <IoNotificationsOutline className="w-6 h-6 text-blue-600" />
-              <span className="absolute -top-0.5 -right-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 text-white text-[10px] px-1 leading-none">3</span>
+              <span className="absolute -top-0.5 -right-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 text-white text-[10px] px-1 leading-none">
+                3
+              </span>
             </button>
 
             {/* Profile */}
@@ -60,15 +41,23 @@ const MainHeader = ({ toggleSidebar }) => {
               className="flex items-center gap-2 cursor-default"
             >
               <img
-                src="https://avatar.iran.liara.run/public/31"
+                src={
+                  profileData?.data?.profileImage ||
+                  "https://avatar.iran.liara.run/public/31"
+                }
                 className="w-8 md:w-12 h-8 md:h-12 object-cover rounded-full"
                 alt="User Avatar"
+                onError={(e) => {
+                  e.target.src = "https://avatar.iran.liara.run/public/31";
+                }}
               />
               <div>
                 <h3 className="hidden md:block text-blue-600 text-lg font-semibold">
-                  Mr. Admin
+                  {profileData?.data?.fullName || user?.name || "Mr. Admin"}
                 </h3>
-                <p className="text-blue-600 text-lg font-semibold">Admin</p>
+                <p className="text-blue-600 text-lg font-semibold">
+                  {profileData?.data?.role || user?.role || "Admin"}
+                </p>
               </div>
             </div>
           </div>
@@ -76,18 +65,17 @@ const MainHeader = ({ toggleSidebar }) => {
       </header>
 
       {/* Chat Overlay */}
-      {showChat && (
-        <div 
+      {/* {showChat && (
+        <div
           ref={chatRef}
           className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
           onClick={(e) => e.target === e.currentTarget && setShowChat(false)}
         >
           <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl h-[80vh] flex flex-col overflow-hidden">
-            {/* Chat Header */}
             <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 flex justify-between items-center">
               <h3 className="text-lg font-semibold">Messages</h3>
               <div className="flex items-center space-x-4">
-                <button 
+                <button
                   onClick={() => setShowChat(false)}
                   className="text-white hover:text-gray-200 focus:outline-none"
                 >
@@ -95,14 +83,13 @@ const MainHeader = ({ toggleSidebar }) => {
                 </button>
               </div>
             </div>
-            
-            {/* Chat Content */}
+
             <div className="flex-1 overflow-hidden flex">
               <Chat isEmbedded={true} />
             </div>
           </div>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

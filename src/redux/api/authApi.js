@@ -47,7 +47,7 @@ export const authApi = baseApi.injectEndpoints({
       }),
     }),
 
-    // change password 
+    // change password
     changePassword: builder.mutation({
       query: (passwordData) => ({
         url: "/auth/change-password",
@@ -57,8 +57,7 @@ export const authApi = baseApi.injectEndpoints({
         },
         body: passwordData,
       }),
-    }), 
-    
+    }),
   }),
 });
 
