@@ -13,9 +13,8 @@ const MainHeader = ({ toggleSidebar }) => {
   const { data: notificationsData } = useGetAllNotificationsQuery();
 
   // Calculate unread notifications count
-  const unreadCount = notificationsData?.data?.data?.filter(
-    (notif) => !notif.read
-  ).length || 0;
+  const unreadCount =
+    notificationsData?.data?.data?.filter((notif) => !notif.read).length || 0;
 
   return (
     <div className="relative w-full px-5">
