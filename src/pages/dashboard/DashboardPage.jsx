@@ -1,14 +1,17 @@
-import { FaChevronDown, FaUsers, FaVideo } from "react-icons/fa";
+import { FaChevronDown } from "react-icons/fa";
 import { useState } from "react";
 import dayjs from "dayjs";
 import RecentUsers from "./RecentUsers";
 import TotalView from "./TotalView";
+import { useDashboardOverviewQuery } from "../../redux/api/dashboard_tab";
 
 function DashboardPage() {
   const currentYear = dayjs().year();
   const startYear = 2020;
   const [selectedYear, setSelectedYear] = useState(currentYear);
   const [isOpen, setIsOpen] = useState(false);
+
+  const { data: dashboardData } = useDashboardOverviewQuery(selectedYear);
 
   const years = Array.from(
     { length: currentYear - startYear + 1 },
@@ -25,19 +28,37 @@ function DashboardPage() {
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
         {[
-          { value: '200K', label: 'Total User' },
-          { value: '1200', label: 'Venue Listed' },
-          { value: '1200', label: 'Venue Booked' },
-          { value: '$120K', label: 'Total Revenue' }
+          {
+            value: dashboardData?.data?.totalUsers || "0",
+            label: "Total User",
+          },
+          {
+            value: dashboardData?.data?.totalHosts || "0",
+            label: "Total Hosts",
+          },
+          {
+            value: dashboardData?.data?.totalBookings || "0",
+            label: "Total Booked",
+          },
+          {
+            value: `$${(
+              dashboardData?.data?.adminEarnings || 0
+            ).toLocaleString()}`,
+            label: "Total Revenue",
+          },
         ].map((stat, index, array) => (
-          <div 
+          <div
             key={stat.label}
             className={`bg-[#F2F2F2] p-4 rounded-lg flex flex-col items-center justify-center min-h-[120px] ${
-              index < array.length - 1 ? 'md:border-r-2 md:border-blue-600' : ''
+              index < array.length - 1 ? "md:border-r-2 md:border-blue-600" : ""
             }`}
           >
-            <p className="text-blue-600 text-2xl md:text-3xl font-bold">{stat.value}</p>
-            <p className="text-blue-600 text-lg md:text-xl font-semibold text-center">{stat.label}</p>
+            <p className="text-blue-600 text-2xl md:text-3xl font-bold">
+              {stat.value}
+            </p>
+            <p className="text-blue-600 text-lg md:text-xl font-semibold text-center">
+              {stat.label}
+            </p>
           </div>
         ))}
       </div>
@@ -51,13 +72,19 @@ function DashboardPage() {
               onClick={() => setIsOpen(!isOpen)}
               className="w-full px-4 py-2 border border-[#111827] rounded-md flex justify-between items-center bg-white hover:bg-gray-50 transition-colors"
             >
-              <span className="text-[#111827] text-sm md:text-base">{selectedYear}</span>
-              <FaChevronDown className={`text-[#111827] w-4 h-4 transition-transform ${isOpen ? 'transform rotate-180' : ''}`} />
+              <span className="text-[#111827] text-sm md:text-base">
+                {selectedYear}
+              </span>
+              <FaChevronDown
+                className={`text-[#111827] w-4 h-4 transition-transform ${
+                  isOpen ? "transform rotate-180" : ""
+                }`}
+              />
             </button>
 
             {isOpen && (
               <>
-                <div 
+                <div
                   className="fixed inset-0 z-20"
                   onClick={() => setIsOpen(false)}
                 />
@@ -67,7 +94,9 @@ function DashboardPage() {
                       key={year}
                       onClick={() => handleSelect(year)}
                       className={`px-4 py-2 cursor-pointer hover:bg-gray-50 transition-colors text-sm md:text-base ${
-                        year === selectedYear ? "bg-blue-50 text-blue-600 font-medium" : "text-gray-700"
+                        year === selectedYear
+                          ? "bg-blue-50 text-blue-600 font-medium"
+                          : "text-gray-700"
                       }`}
                     >
                       {year}
@@ -79,14 +108,16 @@ function DashboardPage() {
           </div>
         </div>
         <div className="h-64 md:h-80">
-          <TotalView />
+          <TotalView chartData={dashboardData?.data?.userChart || []} />
         </div>
       </div>
       {/* Recent Users Section */}
       <div className="w-full">
-        <h1 className="text-xl md:text-2xl text-blue-600 font-bold mb-4">Recent Joined Users</h1>
+        <h1 className="text-xl md:text-2xl text-blue-600 font-bold mb-4">
+          Recent Joined Users
+        </h1>
         <div className="bg-white rounded-lg shadow overflow-hidden">
-          <RecentUsers />
+          <RecentUsers recentUsers={dashboardData?.data?.recentUsers || []} />
         </div>
       </div>
     </div>
