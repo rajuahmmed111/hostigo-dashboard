@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FiChevronDown, FiCalendar, FiFilter } from "react-icons/fi";
+import { FiChevronDown } from "react-icons/fi";
 import {
   BarChart,
   Bar,
@@ -10,66 +10,67 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { useAdminEarnsQuery } from "../../redux/api/earns";
 
 const Earnings = () => {
-  const [timeRange, setTimeRange] = useState("week");
+  const [timeRange, setTimeRange] = useState("ALL_TIME");
+  const {
+    data: earningsData,
+    isLoading,
+    error,
+  } = useAdminEarnsQuery(timeRange);
 
-  // Sample data for earnings chart
-  const chartData = [
-    { name: "Jan", earnings: 2400 },
-    { name: "Feb", earnings: 1398 },
-    { name: "Mar", earnings: 3800 },
-    { name: "Apr", earnings: 3908 },
-    { name: "May", earnings: 4800 },
-    { name: "Jun", earnings: 3800 },
-    { name: "Jul", earnings: 4300 },
-    { name: "Aug", earnings: 2100 },
-    { name: "Sep", earnings: 3200 },
-    { name: "Oct", earnings: 2800 },
-    { name: "Nov", earnings: 3900 },
-    { name: "Dec", earnings: 4200 },
-  ];
+  // Transform monthly earnings data for chart
+  const chartData =
+    earningsData?.data?.monthlyEarnings?.map((month) => ({
+      name: month.month.substring(0, 3), // Get first 3 letters of month name
+      earnings: month.earnings || 0,
+    })) || [];
 
-  // Sample data for recent transactions
-  const transactions = [
-    {
-      id: 1,
-      bookingId: "BK-001",
-      customer: "John Doe",
-      date: "2025-11-28",
-      amount: 120.0,
-      status: "Completed",
-    },
-    {
-      id: 2,
-      bookingId: "BK-002",
-      customer: "Jane Smith",
-      date: "2025-11-27",
-      amount: 95.5,
-      status: "Completed",
-    },
-    {
-      id: 3,
-      bookingId: "BK-003",
-      customer: "Robert Johnson",
-      date: "2025-11-26",
-      amount: 150.0,
-      status: "Refunded",
-    },
-    {
-      id: 4,
-      bookingId: "BK-004",
-      customer: "Emily Davis",
-      date: "2025-11-25",
-      amount: 85.25,
-      status: "Completed",
-    },
-  ];
+  // Transform recent bookings data
+  const transactions =
+    earningsData?.data?.recentBookings?.map((booking) => ({
+      id: booking.id,
+      bookingId: booking.id.substring(0, 8).toUpperCase(), // First 8 chars as booking ID
+      customer: booking.user?.fullName || "Guest User",
+      date: new Date(booking.createdAt).toLocaleDateString(),
+      amount: booking.totalPrice || 0,
+      status:
+        booking.bookingStatus === "COMPLETED"
+          ? "Completed"
+          : booking.bookingStatus === "CONFIRMED"
+          ? "Confirmed"
+          : booking.bookingStatus === "PENDING"
+          ? "Pending"
+          : booking.bookingStatus === "CANCELLED"
+          ? "Cancelled"
+          : booking.bookingStatus === "EXPIRED"
+          ? "Expired"
+          : "Unknown",
+    })) || [];
 
-  // Calculate total earnings
-  const totalEarnings = transactions
-    .filter((tx) => tx.status === "Completed")
-    .reduce((sum, tx) => sum + tx.amount, 0);
+  // Calculate total earnings from API data
+  const totalEarnings = earningsData?.data?.totalEarnings || 0;
+  const totalBookings = earningsData?.data?.totalBookings || 0;
+  const averageEarnings = earningsData?.data?.averageEarnings || 0;
+
+  if (isLoading) {
+    return (
+      <div className="p-6 bg-gray-50 min-h-screen flex items-center justify-center">
+        <div className="text-gray-600">Loading earnings data...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="p-6 bg-gray-50 min-h-screen flex items-center justify-center">
+        <div className="text-red-600">
+          Error loading earnings data: {error.message}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
@@ -83,10 +84,10 @@ const Earnings = () => {
             value={timeRange}
             onChange={(e) => setTimeRange(e.target.value)}
           >
-            <option value="week">This Week</option>
-            <option value="month">This Month</option>
-            <option value="year">This Year</option>
-            <option value="all">All Time</option>
+            <option value="THIS_WEEK">This Week</option>
+            <option value="THIS_MONTH">This Month</option>
+            <option value="THIS_YEAR">This Year</option>
+            <option value="ALL_TIME">All Time</option>
           </select>
           <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
             <FiChevronDown className="text-gray-400" />
@@ -129,9 +130,11 @@ const Earnings = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-500">
-                Completed Rides
+                Completed Bookings
               </p>
-              <p className="text-2xl font-semibold text-gray-900">24</p>
+              <p className="text-2xl font-semibold text-gray-900">
+                {totalBookings}
+              </p>
               <p className="text-sm text-green-600 mt-1">+4 from last week</p>
             </div>
             <div className="p-3 bg-green-50 rounded-lg">
@@ -156,10 +159,10 @@ const Earnings = () => {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-500">
-                Average per Ride
+                Average Earnings
               </p>
               <p className="text-2xl font-semibold text-gray-900">
-                ${(totalEarnings / 24).toFixed(2)}
+                ${averageEarnings.toFixed(2)}
               </p>
               <p className="text-sm text-red-600 mt-1">-2% from last week</p>
             </div>
@@ -219,7 +222,7 @@ const Earnings = () => {
             <h2 className="text-lg font-semibold text-gray-800">
               Recent Transactions
             </h2>
-            <div className="flex items-center space-x-3 mt-3 md:mt-0">
+            {/* <div className="flex items-center space-x-3 mt-3 md:mt-0">
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                   <FiCalendar className="text-gray-400" />
@@ -233,7 +236,7 @@ const Earnings = () => {
               <button className="p-2 border border-gray-300 rounded-lg hover:bg-gray-50">
                 <FiFilter className="text-gray-500" />
               </button>
-            </div>
+            </div> */}
           </div>
         </div>
         <div className="overflow-x-auto">
@@ -258,7 +261,7 @@ const Earnings = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {transactions.map((tx) => (
+              {transactions.slice(0, 10).map((tx) => (
                 <tr key={tx.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
                     {tx.bookingId}
@@ -277,7 +280,15 @@ const Earnings = () => {
                       className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         tx.status === "Completed"
                           ? "bg-green-100 text-green-800"
-                          : "bg-yellow-100 text-yellow-800"
+                          : tx.status === "Confirmed"
+                          ? "bg-blue-100 text-blue-800"
+                          : tx.status === "Pending"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : tx.status === "Cancelled"
+                          ? "bg-red-100 text-red-800"
+                          : tx.status === "Expired"
+                          ? "bg-gray-100 text-gray-800"
+                          : "bg-gray-100 text-gray-800"
                       }`}
                     >
                       {tx.status}
@@ -288,7 +299,7 @@ const Earnings = () => {
             </tbody>
           </table>
         </div>
-        <div className="px-6 py-3 border-t border-gray-200 flex items-center justify-between">
+        {/* <div className="px-6 py-3 border-t border-gray-200 flex items-center justify-between">
           <p className="text-sm text-gray-500">
             Showing <span className="font-medium">1</span> to{" "}
             <span className="font-medium">4</span> of{" "}
@@ -308,7 +319,7 @@ const Earnings = () => {
               Next
             </button>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

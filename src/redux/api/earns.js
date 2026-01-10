@@ -7,6 +7,9 @@ export const earnApi = baseApi.injectEndpoints({
       query: (timeRange) => ({
         url: `/statistics/admin-earnings?timeRange=${timeRange}`,
         method: "GET",
+        headers: {
+          Authorization: `${localStorage.getItem("accessToken")}`,
+        },
       }),
     }),
   }),
