@@ -1,49 +1,46 @@
-import { useState } from "react";
 import { ConfigProvider, List, Button } from "antd";
 import { IoChevronBack } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
+import { useGetAllNotificationsQuery } from "../../redux/api/notification";
 
 export default function Notifications() {
   const navigate = useNavigate();
-  const [items, setItems] = useState([
-    {
-      id: 1,
-      title: "New user registered",
-      time: "2m ago",
-      read: false,
-      description:
-        "A new dentist account has been created and is awaiting verification.",
-    },
-    {
-      id: 2,
-      title: "Case #123 has been updated",
-      time: "10m ago",
-      read: false,
-      description: "Lab Technician updated the case status to 'In Production'.",
-    },
-    {
-      id: 3,
-      title: "Weekly report is ready",
-      time: "1h ago",
-      read: true,
-      description:
-        "Your weekly engagement and growth report is now available for review.",
-    },
-    {
-      id: 4,
-      title: "Clinic profile approved",
-      time: "3h ago",
-      read: false,
-      description:
-        "Smile Care Clinic has been approved and is now visible to users.",
-    },
-  ]);
+  const { data: notificationsData, isLoading } = useGetAllNotificationsQuery();
+
+  // Format time ago
+  const formatTimeAgo = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffMins = Math.floor(diffMs / 60000);
+    const diffHours = Math.floor(diffMs / 3600000);
+    const diffDays = Math.floor(diffMs / 86400000);
+
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return `${diffDays}d ago`;
+  };
+
+  // Transform API data to component format
+  const items =
+    notificationsData?.data?.data?.map((notif) => ({
+      id: notif.id,
+      title: notif.title,
+      time: formatTimeAgo(notif.createdAt),
+      read: notif.read,
+      description: notif.message || notif.body,
+    })) || [];
 
   const markRead = (id, read = true) => {
-    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, read } : i)));
+    // TODO: Implement API call to mark notification as read
+    console.log("Mark notification", id, read ? "read" : "unread");
   };
-  const markAllRead = () =>
-    setItems((prev) => prev.map((i) => ({ ...i, read: true })));
+
+  const markAllRead = () => {
+    // TODO: Implement API call to mark all notifications as read
+    console.log("Mark all notifications as read");
+  };
+
   return (
     <div className="p-5 min-h-screen">
       <div className="bg-blue-600 px-4 md:px-5 py-3 rounded-md mb-3 flex flex-wrap md:flex-nowrap items-start md:items-center gap-2 md:gap-3">
@@ -75,6 +72,7 @@ export default function Notifications() {
         <div className="bg-transparent">
           <List
             split={false}
+            loading={isLoading}
             dataSource={items}
             renderItem={(item) => (
               <div

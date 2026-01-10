@@ -4,11 +4,18 @@ import { IoMenu, IoNotificationsOutline } from "react-icons/io5";
 // import Chat from "../../pages/chat/Chat";
 import { useSelector } from "react-redux";
 import { useGetMyProfileQuery } from "../../redux/api/authApi";
+import { useGetAllNotificationsQuery } from "../../redux/api/notification";
 
 const MainHeader = ({ toggleSidebar }) => {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
   const { data: profileData } = useGetMyProfileQuery();
+  const { data: notificationsData } = useGetAllNotificationsQuery();
+
+  // Calculate unread notifications count
+  const unreadCount = notificationsData?.data?.data?.filter(
+    (notif) => !notif.read
+  ).length || 0;
 
   return (
     <div className="relative w-full px-5">
@@ -27,18 +34,18 @@ const MainHeader = ({ toggleSidebar }) => {
               type="button"
               aria-label="Notifications"
               onClick={() => navigate("/notifications")}
-              className="relative p-2 rounded-full border border-blue-600 hover:bg-white/60 transition"
+              className="relative p-2 rounded-full border border-blue-600 hover:bg-white/60 transition cursor-pointer"
             >
               <IoNotificationsOutline className="w-6 h-6 text-blue-600" />
               <span className="absolute -top-0.5 -right-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 text-white text-[10px] px-1 leading-none">
-                3
+                {unreadCount > 99 ? "99+" : unreadCount}
               </span>
             </button>
 
             {/* Profile */}
             <div
               onClick={() => navigate("/profile")}
-              className="flex items-center gap-2 cursor-default"
+              className="flex items-center gap-2 cursor-default cursor-pointer"
             >
               <img
                 src={
