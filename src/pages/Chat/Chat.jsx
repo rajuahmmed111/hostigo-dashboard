@@ -346,14 +346,14 @@ const Chat = () => {
                     />
                     <button
                       onClick={() => fileInputRef.current?.click()}
-                      className="p-3 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+                      className="p-3 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors cursor-pointer"
                     >
                       <IoImagesOutline className="w-5 h-5" />
                     </button>
                     <button
                       onClick={sendMessage}
                       disabled={!newMessage.trim()}
-                      className={`p-3 rounded-full transition-all ${
+                      className={`p-3 rounded-full transition-all cursor-pointer ${
                         newMessage.trim()
                           ? "bg-blue-600 hover:bg-blue-700 text-white shadow-lg"
                           : "bg-gray-200 text-gray-400 cursor-not-allowed"
