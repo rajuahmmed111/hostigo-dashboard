@@ -13,6 +13,7 @@ export const baseApi = createApi({
     "Reports",
     "Gamification",
     "Notification",
+    "AdminChannels",
   ],
   endpoints: () => ({}),
 });
