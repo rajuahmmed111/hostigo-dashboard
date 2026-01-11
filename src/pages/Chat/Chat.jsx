@@ -5,6 +5,7 @@ import { FiMenu, FiMoreVertical, FiMessageSquare } from "react-icons/fi";
 import { IoImagesOutline } from "react-icons/io5";
 import { BsCheck2All } from "react-icons/bs";
 import { useGetAllChannelsForAdminQuery } from "../../redux/api/getAllChannelsForAdminApi";
+import useChatSocket from "../../hooks/useChatSocket";
 
 const Chat = () => {
   const {
@@ -12,17 +13,6 @@ const Chat = () => {
     isLoading,
     error,
   } = useGetAllChannelsForAdminQuery();
-
-  // Console log the API result
-  useEffect(() => {
-    if (channelsData) {
-      console.log("API Result:", channelsData);
-      console.log("Channels Length:", channelsData?.data?.data?.length || 0);
-    }
-    if (error) {
-      console.log("API Error:", error);
-    }
-  }, [channelsData, error]);
 
   const transformChannelsToUsers = (channels) => {
     if (!channels || !channels.data) return [];
@@ -54,49 +44,25 @@ const Chat = () => {
 
   const users = transformChannelsToUsers(channelsData?.data);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      text: "Hello! How are you feeling today?",
-      sender: "them",
-      time: "2:30 PM",
-      status: "read",
-    },
-    {
-      id: 2,
-      text: "I'm feeling much better, thank you for asking!",
-      sender: "me",
-      time: "2:32 PM",
-      status: "delivered",
-    },
-    {
-      id: 3,
-      text: "That's great to hear! Please continue taking your medication as prescribed.",
-      sender: "them",
-      time: "2:33 PM",
-      status: "read",
-    },
-    {
-      id: 4,
-      text: "Will do. When should I schedule my next appointment?",
-      sender: "me",
-      time: "2:35 PM",
-      status: "delivered",
-    },
-    {
-      id: 5,
-      text: "Let me check my calendar and get back to you shortly.",
-      sender: "them",
-      time: "2:36 PM",
-      status: "read",
-    },
-  ]);
+  const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
   const [showSidebar, setShowSidebar] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  // WebSocket connection for real-time messaging
+  const socketMessages = useChatSocket(
+    selectedUser?.channelName,
+    "691e3464c24167e9e7061fb0"
+  );
+
+  // Update messages when new socket messages arrive
+  useEffect(() => {
+    if (socketMessages && socketMessages.length > 0) {
+      setMessages(socketMessages);
+    }
+  }, [socketMessages]);
 
   useEffect(() => {
     if (users.length > 0 && !selectedUser) {
@@ -143,9 +109,9 @@ const Chat = () => {
   }
 
   const sendMessage = () => {
-    if (newMessage.trim()) {
+    if (newMessage.trim() && selectedUser) {
       const newMsg = {
-        id: messages.length + 1,
+        id: Date.now(),
         text: newMessage,
         sender: "me",
         time: new Date().toLocaleTimeString([], {
@@ -154,25 +120,8 @@ const Chat = () => {
         }),
         status: "sent",
       };
-      setMessages([...messages, newMsg]);
+      setMessages((prev) => [...prev, newMsg]);
       setNewMessage("");
-
-      // Simulate typing indicator and response
-      setIsTyping(true);
-      setTimeout(() => {
-        setIsTyping(false);
-        const response = {
-          id: messages.length + 2,
-          text: "Thank you for your message. I'll get back to you soon!",
-          sender: "them",
-          time: new Date().toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
-          status: "delivered",
-        };
-        setMessages((prev) => [...prev, response]);
-      }, 2000);
     }
   };
 
@@ -354,7 +303,7 @@ const Chat = () => {
                 ))}
 
                 {/* Typing Indicator */}
-                {isTyping && (
+                {/* {isTyping && (
                   <div className="flex justify-start">
                     <div className="bg-white border rounded-2xl rounded-bl-md px-4 py-3 shadow-sm">
                       <div className="flex space-x-1">
@@ -370,7 +319,7 @@ const Chat = () => {
                       </div>
                     </div>
                   </div>
-                )}
+                )} */}
                 <div ref={messagesEndRef} />
               </div>
 
