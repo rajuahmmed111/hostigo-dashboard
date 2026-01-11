@@ -4,10 +4,15 @@ import { RiSendPlane2Fill } from "react-icons/ri";
 import { FiMenu, FiMoreVertical, FiMessageSquare } from "react-icons/fi";
 import { IoImagesOutline } from "react-icons/io5";
 import { BsCheck2All } from "react-icons/bs";
-import { useGetAllChannelsForAdminQuery } from "../../redux/api/getAllChannelsForAdminApi";
+import {
+  useGetAllChannelsForAdminQuery,
+  useGetAllMessageByChannelNameQuery,
+} from "../../redux/api/chat";
 import useChatSocket from "../../hooks/useChatSocket";
 
 const Chat = () => {
+  const currentUserId = localStorage.getItem("userId");
+
   const {
     data: channelsData,
     isLoading,
@@ -19,7 +24,7 @@ const Chat = () => {
 
     return channels.data.map((channel) => {
       const otherPerson =
-        channel.person1.id === "691e3464c24167e9e7061fb0"
+        channel.person1.id === currentUserId
           ? channel.person2
           : channel.person1;
 
@@ -51,18 +56,55 @@ const Chat = () => {
   const messagesEndRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  // WebSocket connection for real-time messaging
+  // webSocket connection for real-time messaging
   const socketMessages = useChatSocket(
     selectedUser?.channelName,
-    "691e3464c24167e9e7061fb0"
+    currentUserId
   );
 
-  // Update messages when new socket messages arrive
+  // fetch existing messages when channel is selected
+  const {
+    data: messagesData,
+    isLoading: messagesLoading,
+    error: messagesError,
+  } = useGetAllMessageByChannelNameQuery(selectedUser?.channelName, {
+    skip: !selectedUser?.channelName,
+  });
+  console.log(messagesData, "messagesData");
+
+  // update messages when new socket messages arrive
   useEffect(() => {
     if (socketMessages && socketMessages.length > 0) {
       setMessages(socketMessages);
     }
   }, [socketMessages]);
+
+  // Transform API messages to match UI structure
+  const transformApiMessages = (apiMessages) => {
+    if (!apiMessages || !Array.isArray(apiMessages)) return [];
+
+    return apiMessages.map((msg) => ({
+      id: msg.id,
+      text: msg.message,
+      sender: msg.senderId === currentUserId ? "me" : "other",
+      time: new Date(msg.createdAt).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      senderInfo: msg.sender,
+    }));
+  };
+
+  // update messages when API data arrives
+  useEffect(() => {
+    if (
+      (messagesData?.data?.data && !socketMessages) ||
+      socketMessages.length === 0
+    ) {
+      const transformedMessages = transformApiMessages(messagesData.data.data);
+      setMessages(transformedMessages);
+    }
+  }, [messagesData, socketMessages]);
 
   useEffect(() => {
     if (users.length > 0 && !selectedUser) {
@@ -82,19 +124,21 @@ const Chat = () => {
     scrollToBottom();
   }, [messages]);
 
-  if (isLoading) {
+  // Loading states
+  if (isLoading || messagesLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-gray-500">Loading channels...</div>
+        <div className="text-gray-500">Loading...</div>
       </div>
     );
   }
 
-  if (error) {
+  // Error states
+  if (error || messagesError) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-red-500">
-          Error loading channels: {error.message}
+          Error: {error?.message || messagesError?.message}
         </div>
       </div>
     );
