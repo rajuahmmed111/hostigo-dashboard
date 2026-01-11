@@ -11,6 +11,11 @@ export const adminChannelsApi = baseApi.injectEndpoints({
         },
       }),
       providesTags: ["AdminChannels"],
+      transformResponse: (response) => {
+        console.log("API Response Data:", response);
+        console.log("Data Length:", response?.data?.data?.length || 0);
+        return response;
+      },
     }),
   }),
 });
