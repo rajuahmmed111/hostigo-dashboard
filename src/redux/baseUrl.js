@@ -14,6 +14,7 @@ export const baseApi = createApi({
     "Gamification",
     "Notification",
     "AdminChannels",
+    "UserInfo",
   ],
   endpoints: () => ({}),
 });

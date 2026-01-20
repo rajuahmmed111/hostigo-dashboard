@@ -7,7 +7,7 @@ import { IoMdSettings } from "react-icons/io";
 import { IoCloseSharp, IoLogOutOutline } from "react-icons/io5";
 import { MdAdminPanelSettings } from "react-icons/md";
 
-import { BsCurrencyDollar, BsCreditCard } from "react-icons/bs";
+import { BsCurrencyDollar, BsCreditCard, BsCheckCircle } from "react-icons/bs";
 import { BiChat } from "react-icons/bi";
 import { logout } from "../../redux/features/auth/authSlice";
 import { useLogoutMutation } from "../../redux/api/authApi";
@@ -100,6 +100,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               <p className="text-lg font-semibold">Dashboard</p>
             </li>
           </Link>
+
           {/* User Management */}
           <Link to="/user-details" onClick={handleLinkClick}>
             <li
@@ -111,6 +112,20 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             >
               <LuUsers className="w-5 h-5" />
               <p className="text-lg font-semibold">All Users</p>
+            </li>
+          </Link>
+
+          {/* show provider verify request */}
+          <Link to="/verify-request" onClick={handleLinkClick}>
+            <li
+              className={`flex items-center gap-2 mt-2 cursor-pointer transition-all duration-300 ease-in-out ${
+                isActive("/verify-request")
+                  ? "bg-blue-600 text-white px-3 py-3 rounded-lg"
+                  : "hover:bg-gray-100 px-3 py-3 rounded-lg"
+              }`}
+            >
+              <BsCheckCircle className="w-5 h-5" />
+              <p className="text-lg font-semibold">Verify Request</p>
             </li>
           </Link>
 
@@ -156,48 +171,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             </li>
           </Link>
 
-          {/* Categories */}
-          {/* <Link to="/categories" onClick={handleLinkClick}>
-          <li
-            className={`flex items-center gap-2 mt-2 cursor-pointer transition-all duration-300 ease-in-out ${
-              isActive("/categories")
-                ? "bg-blue-600 text-white px-3 py-3 rounded-lg"
-                : "hover:bg-gray-100 px-3 py-3 rounded-lg"
-            }`}
-          >
-            <BiCategory className="w-5 h-5" />
-            <p className="text-lg font-semibold">Categories</p>
-          </li>
-        </Link> */}
-
-          {/* Lab Management */}
-          {/* <Link to="/payment-management" onClick={handleLinkClick}>
-          <li
-            className={`flex items-center gap-2 mt-2 cursor-pointer transition-all duration-300 ease-in-out ${
-              isActive("/payment-management")
-                ? "bg-blue-600 text-white px-3 py-3 rounded-lg"
-                : "hover:bg-gray-100 px-3 py-3 rounded-lg"
-            }`}
-          >
-            <RiFlaskLine className="w-5 h-5" />
-            <p className="text-lg font-semibold whitespace-nowrap">Payments</p>
-          </li>
-        </Link> */}
-
-          {/* Invoices */}
-          {/* <Link to="/invoices" onClick={handleLinkClick}>
-          <li
-            className={`flex items-center gap-2 mt-2 cursor-pointer transition-all duration-300 ease-in-out ${
-              isActive("/invoices")
-                ? "bg-blue-600 text-white px-3 py-3 rounded-lg"
-                : "hover:bg-gray-100 px-3 py-3 rounded-lg"
-            }`}
-          >
-            <BsReceipt className="w-5 h-5" />
-            <p className="text-lg font-semibold">Invoices</p>
-          </li>
-        </Link> */}
-
+          {/* chats */}
           <Link to="/chat" onClick={handleLinkClick}>
             <li
               className={`flex items-center gap-2 mt-2 cursor-pointer transition-all duration-300 ease-in-out ${
@@ -225,6 +199,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             </li>
           </Link>
 
+          {/* reports */}
           <Link to="/reports">
             <li
               className={`flex items-center gap-2 mt-5 cursor-pointer transition-all duration-300 ease-in-out ${
@@ -237,6 +212,8 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               <p className="text-lg font-semibold">Reports</p>
             </li>
           </Link>
+
+          {/* settings */}
           <Link to="/settings">
             <li
               className={`flex items-center gap-2 mt-5 cursor-pointer transition-all duration-300 ease-in-out ${

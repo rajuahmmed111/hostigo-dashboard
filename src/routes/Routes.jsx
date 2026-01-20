@@ -16,12 +16,13 @@ import ChangePass from "../pages/profile/ChangePass";
 import AboutUs from "../pages/optional/AboutUs";
 import EditProfile from "../pages/profile/EditProfile";
 import CreateAdmin from "../pages/Create Admin/CreateAdmin";
-import AddAdmin from "../pages/Add Admin/AddAdmin"
+import AddAdmin from "../pages/Add Admin/AddAdmin";
 import Categories from "../pages/Categories/Categories";
 import Earnings from "../pages/Earnings/Earnings";
 import Notifications from "../pages/Notifications/Notifications";
 import Subscriptions from "../pages/subscriptions/Subscriptions";
 import Chat from "../pages/chat/Chat";
+import VerifyRequest from "../pages/VerifyRequest/VerifyRequest";
 import SubscriptionPlans from "../pages/Subscription Plans/SubscriptionPlans";
 import AddSubscriptionPlan from "../pages/Subscription Plans/AddSubscriptionPlan";
 
@@ -56,8 +57,6 @@ const router = createBrowserRouter([
         element: <UserDetails />,
       },
 
-    
-     
       {
         path: "/create-user",
         element: <CreateUser />,
@@ -115,11 +114,11 @@ const router = createBrowserRouter([
       {
         path: "/earnings",
         element: <Earnings />,
-      }, 
+      },
       {
         path: "/subscriptions",
         element: <Subscriptions />,
-      }, 
+      },
       {
         path: "/subscription-plans",
         element: <SubscriptionPlans />,
@@ -131,6 +130,10 @@ const router = createBrowserRouter([
       {
         path: "/chat",
         element: <Chat />,
+      },
+      {
+        path: "/verify-request",
+        element: <VerifyRequest />,
       },
     ],
   },
