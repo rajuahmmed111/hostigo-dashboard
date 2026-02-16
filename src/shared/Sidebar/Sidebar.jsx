@@ -8,7 +8,7 @@ import { IoCloseSharp, IoLogOutOutline } from "react-icons/io5";
 import { MdAdminPanelSettings } from "react-icons/md";
 
 import { BsCurrencyDollar, BsCreditCard, BsCheckCircle } from "react-icons/bs";
-// import { BiChat } from "react-icons/bi";
+import { FaQuestion } from "react-icons/fa";
 import { logout } from "../../redux/features/auth/authSlice";
 import { useLogoutMutation } from "../../redux/api/authApi";
 import { message } from "antd";
@@ -184,6 +184,20 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               <p className="text-lg font-semibold">Chat</p>
             </li>
           </Link> */}
+
+          {/* FAQ */}
+          <Link to="/faq" onClick={handleLinkClick}>
+            <li
+              className={`flex items-center gap-2 mt-2 cursor-pointer transition-all duration-300 ease-in-out ${
+                isActive("/faq")
+                  ? "bg-blue-600 text-white px-3 py-3 rounded-lg"
+                  : "hover:bg-gray-100 px-3 py-3 rounded-lg"
+              }`}
+            >
+              <FaQuestion className="w-5 h-5" />
+              <p className="text-lg font-semibold">FAQ</p>
+            </li>
+          </Link>
 
           {/* Create Admin */}
           <Link to="/create-admin">
