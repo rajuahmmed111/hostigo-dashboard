@@ -9,6 +9,7 @@ const VerifyRequest = () => {
   const [statusFilter, setStatusFilter] = useState("all"); // all, pending, verified
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [updatingId, setUpdatingId] = useState(null);
 
   const {
     data: userInfoData,
@@ -17,19 +18,18 @@ const VerifyRequest = () => {
     refetch,
   } = useGetAllShowUserInfoQuery("");
 
-  console.log(userInfoData, "userInfoData");
-  console.log(error, "error");
-
-  const [updateUserInfoStatus, { isLoading: isUpdating }] =
-    useUpdateUserInfoStatusMutation();
+  const [updateUserInfoStatus] = useUpdateUserInfoStatusMutation();
 
   const handleUpdateStatus = async (id) => {
     try {
+      setUpdatingId(id);
       await updateUserInfoStatus(id).unwrap();
       message.success("Status updated successfully");
       refetch();
     } catch {
       message.error("Failed to update status");
+    } finally {
+      setUpdatingId(null);
     }
   };
 
@@ -211,15 +211,17 @@ const VerifyRequest = () => {
                       <div className="flex items-center">
                         <img
                           src={
-                            request.user?.profileImage ||
+                            request.propertyOwner?.profileImage ||
                             "https://avatar.iran.liara.run/public/28"
                           }
-                          alt={request.user?.fullName || "Property Owner"}
+                          alt={
+                            request.propertyOwner?.fullName || "Property Owner"
+                          }
                           className="w-10 h-10 rounded-full object-cover mr-3"
                         />
                         <div>
                           <div className="text-sm font-medium text-gray-900">
-                            {request.user?.fullName || "Unknown Owner"}
+                            {request.propertyOwner?.fullName || "Unknown Owner"}
                           </div>
                         </div>
                       </div>
@@ -277,10 +279,10 @@ const VerifyRequest = () => {
                         {!request.isShow && (
                           <button
                             onClick={() => handleUpdateStatus(request.id)}
-                            disabled={isUpdating}
-                            className="cursor-pointer inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={updatingId === request.id}
+                            className="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
-                            {isUpdating ? (
+                            {updatingId === request.id ? (
                               <>
                                 <svg
                                   className="animate-spin -ml-1 mr-1 h-4 w-4 text-white"
@@ -493,21 +495,25 @@ const VerifyRequest = () => {
                     <div className="flex items-center">
                       <img
                         src={
-                          selectedRequest.user?.profileImage ||
+                          selectedRequest.propertyOwner?.profileImage ||
                           "https://avatar.iran.liara.run/public/28"
                         }
-                        alt={selectedRequest.user?.fullName || "Property Owner"}
+                        alt={
+                          selectedRequest.propertyOwner?.fullName ||
+                          "Property Owner"
+                        }
                         className="w-16 h-16 rounded-full object-cover mr-4"
                       />
                       <div>
                         <p className="font-medium text-gray-900">
-                          {selectedRequest.user?.fullName || "Unknown Owner"}
+                          {selectedRequest.propertyOwner?.fullName ||
+                            "Unknown Owner"}
                         </p>
                         <p className="text-sm text-gray-600">
-                          {selectedRequest.user?.email}
+                          {selectedRequest.propertyOwner?.email}
                         </p>
                         <p className="text-sm text-gray-600">
-                          {selectedRequest.user?.role}
+                          {selectedRequest.propertyOwner?.role}
                         </p>
                       </div>
                     </div>
@@ -516,7 +522,8 @@ const VerifyRequest = () => {
                         Contact Number:
                       </p>
                       <p className="text-sm text-gray-600">
-                        {selectedRequest.user?.contactNumber || "Not provided"}
+                        {selectedRequest.propertyOwner?.contactNumber ||
+                          "Not provided"}
                       </p>
                     </div>
                     <div>
@@ -524,7 +531,8 @@ const VerifyRequest = () => {
                         Address:
                       </p>
                       <p className="text-sm text-gray-600">
-                        {selectedRequest.user?.address || "Not provided"}
+                        {selectedRequest.propertyOwner?.address ||
+                          "Not provided"}
                       </p>
                     </div>
                     <div>
@@ -532,17 +540,19 @@ const VerifyRequest = () => {
                         Country:
                       </p>
                       <p className="text-sm text-gray-600">
-                        {selectedRequest.user?.country || "Not provided"}
+                        {selectedRequest.propertyOwner?.country ||
+                          "Not provided"}
                       </p>
                     </div>
-                    {selectedRequest.user?.passportOrNID &&
-                      selectedRequest.user.passportOrNID.length > 0 && (
+                    {selectedRequest.propertyOwner?.passportOrNID &&
+                      selectedRequest.propertyOwner.passportOrNID.length >
+                        0 && (
                         <div>
                           <p className="text-sm font-medium text-gray-700 mb-2">
                             ID Documents:
                           </p>
                           <div className="flex flex-wrap gap-2">
-                            {selectedRequest.user.passportOrNID.map(
+                            {selectedRequest.propertyOwner.passportOrNID.map(
                               (doc, index) => (
                                 <img
                                   key={index}

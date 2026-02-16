@@ -6,7 +6,7 @@ export const notificationApi = baseApi.injectEndpoints({
     // get all show user info
     getAllShowUserInfo: builder.query({
       query: (params = "") => ({
-        url: `/show-user-info${params}`,
+        url: `/show-user-info/${params}`,
         method: "GET",
         headers: {
           Authorization: `${localStorage.getItem("accessToken")}`,
