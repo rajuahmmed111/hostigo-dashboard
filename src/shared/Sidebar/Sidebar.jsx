@@ -61,7 +61,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
 
       {/* Sidebar */}
       <div
-        className={`bg-[#fff] text-blue-600 border border-[#E5E7EB] h-screen overflow-y-auto py-5 md:py-0 z-50 transition-transform shadow-lg my-5 rounded-lg shadow-[0_0_10px_0_rgba(0,0,0,0.1)]
+        className={`bg-[#fff] text-blue-600 border border-[#E5E7EB] h-screen overflow-y-auto py-5 md:py-0 z-50 transition-transform shadow-lg
           w-[80%] sm:w-[70%] md:w-[60%] lg:w-70 xl:w-72
           ${isOpen ? "translate-x-0" : "-translate-x-full"}
           fixed top-0 left-0 bottom-0
@@ -77,7 +77,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         </button>
 
         {/* Logo */}
-        <div className="flex justify-center items-center gap-2 px-5 mt-20">
+        <div className="flex justify-center items-center gap-2 px-5 mt-8">
           <img
             src="/logo.png"
             className="w-[120px] h-[100px]"
