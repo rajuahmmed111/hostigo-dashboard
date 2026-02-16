@@ -3,6 +3,7 @@ import {
   useGetAllFaqsQuery,
   useCreateFaqMutation,
   useUpdateFaqMutation,
+  useDeleteFaqMutation,
 } from "../../redux/api/faqApi";
 import { Spin, message, Modal, Form, Input, Button } from "antd";
 
@@ -11,11 +12,13 @@ export default function FAQ() {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingFaq, setEditingFaq] = useState(null);
+  const [deletingFaqId, setDeletingFaqId] = useState(null);
   const [form] = Form.useForm();
 
   const { data: faqData, isLoading, error } = useGetAllFaqsQuery();
   const [createFaq, { isLoading: isCreating }] = useCreateFaqMutation();
   const [updateFaq, { isLoading: isUpdating }] = useUpdateFaqMutation();
+  const [deleteFaq] = useDeleteFaqMutation();
 
   const toggleFaq = (index) => {
     setExpandedFaq(expandedFaq === index ? null : index);
@@ -48,6 +51,35 @@ export default function FAQ() {
       console.error("Update FAQ error:", error);
       message.error("Failed to update FAQ");
     }
+  };
+
+  const handleDeleteFaq = async (faq) => {
+    const faqId = faq._id || faq.id;
+
+    if (!faqId) {
+      message.error("Cannot delete FAQ: Missing ID");
+      return;
+    }
+
+    Modal.confirm({
+      title: "Are you sure you want to delete this FAQ?",
+      content: `Question: ${faq.question}`,
+      okText: "Delete",
+      okType: "danger",
+      cancelText: "Cancel",
+      onOk: async () => {
+        try {
+          setDeletingFaqId(faqId);
+          await deleteFaq(faqId).unwrap();
+          message.success("FAQ deleted successfully");
+        } catch (error) {
+          console.error("Delete FAQ error:", error);
+          message.error("Failed to delete FAQ");
+        } finally {
+          setDeletingFaqId(null);
+        }
+      },
+    });
   };
 
   const openEditModal = (faq) => {
@@ -137,17 +169,31 @@ export default function FAQ() {
                     </span>
                     <div className="flex items-center space-x-2">
                       {faqId && (
-                        <Button
-                          size="small"
-                          type="text"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openEditModal(faq);
-                          }}
-                          className="text-blue-500 hover:text-blue-600"
-                        >
-                          Edit
-                        </Button>
+                        <>
+                          <Button
+                            size="small"
+                            type="text"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              openEditModal(faq);
+                            }}
+                            className="text-blue-500 hover:text-blue-600"
+                          >
+                            Edit
+                          </Button>
+                          <Button
+                            size="small"
+                            type="text"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteFaq(faq);
+                            }}
+                            className="text-red-500 hover:text-red-600"
+                            loading={deletingFaqId === faqId}
+                          >
+                            Delete
+                          </Button>
+                        </>
                       )}
                       <svg
                         className={`w-5 h-5 text-gray-500 transition-transform duration-200 ${
