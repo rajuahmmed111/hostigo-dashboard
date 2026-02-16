@@ -15,6 +15,7 @@ export const baseApi = createApi({
     "Notification",
     "AdminChannels",
     "UserInfo",
+    "FAQ",
   ],
   endpoints: () => ({}),
 });

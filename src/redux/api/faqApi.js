@@ -1,6 +1,7 @@
-import { createApi } from "@reduxjs/toolkit/query/react";
+import { baseApi } from "../baseUrl";
 
-const faqApi = createApi({
+export const faqApi = baseApi.injectEndpoints({
+  tagTypes: ["FAQ"],
   endpoints: (builder) => ({
     // create FAQ
     createFaq: builder.mutation({
@@ -73,5 +74,3 @@ export const {
   useUpdateFaqMutation,
   useDeleteFaqMutation,
 } = faqApi;
-
-export default faqApi;
