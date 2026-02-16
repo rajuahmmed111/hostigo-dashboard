@@ -23,6 +23,7 @@ export default function Settings() {
               <IoChevronForward className="text-gray-500" />
             </Link>
           </li>
+
           {/* Privacy Policy */}
           <li>
             <Link
@@ -33,6 +34,7 @@ export default function Settings() {
               <IoChevronForward className="text-gray-500" />
             </Link>
           </li>
+
           {/* Terms & Conditions */}
           <li>
             <Link
@@ -45,6 +47,7 @@ export default function Settings() {
               <IoChevronForward className="text-gray-500" />
             </Link>
           </li>
+          
           {/* About Us */}
           <li>
             <Link
