@@ -6,6 +6,7 @@ import { TbReport } from "react-icons/tb";
 import { IoMdSettings } from "react-icons/io";
 import { IoCloseSharp, IoLogOutOutline } from "react-icons/io5";
 import { MdAdminPanelSettings } from "react-icons/md";
+import { BiChat } from "react-icons/bi";
 
 import { BsCurrencyDollar, BsCreditCard, BsCheckCircle } from "react-icons/bs";
 import { FaQuestion } from "react-icons/fa";
@@ -172,7 +173,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           </Link>
 
           {/* chats */}
-          {/* <Link to="/chat" onClick={handleLinkClick}>
+          <Link to="/chat" onClick={handleLinkClick}>
             <li
               className={`flex items-center gap-2 mt-2 cursor-pointer transition-all duration-300 ease-in-out ${
                 isActive("/chat")
@@ -183,7 +184,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               <BiChat className="w-5 h-5" />
               <p className="text-lg font-semibold">Chat</p>
             </li>
-          </Link> */}
+          </Link>
 
           {/* FAQ */}
           <Link to="/faq" onClick={handleLinkClick}>
