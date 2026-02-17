@@ -202,7 +202,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           {/* Create Admin */}
           <Link to="/create-admin">
             <li
-              className={`flex items-center gap-2 mt-5 cursor-pointer transition-all duration-300 ease-in-out ${
+              className={`flex items-center gap-2 mt-2 cursor-pointer transition-all duration-300 ease-in-out ${
                 isActive("/create-admin")
                   ? "bg-blue-600 text-white px-3 py-3 rounded-lg"
                   : "hover:bg-gray-100 px-3 py-3 rounded-lg"
@@ -216,7 +216,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           {/* reports */}
           <Link to="/reports">
             <li
-              className={`flex items-center gap-2 mt-5 cursor-pointer transition-all duration-300 ease-in-out ${
+              className={`flex items-center gap-2 mt-2 cursor-pointer transition-all duration-300 ease-in-out ${
                 isActive("/reports")
                   ? "bg-blue-600 text-white px-3 py-3 rounded-lg"
                   : "hover:bg-gray-100 px-3 py-3 rounded-lg"
@@ -230,7 +230,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           {/* settings */}
           <Link to="/settings">
             <li
-              className={`flex items-center gap-2 mt-5 cursor-pointer transition-all duration-300 ease-in-out ${
+              className={`flex items-center gap-2 mt-2 cursor-pointer transition-all duration-300 ease-in-out ${
                 isActive("/settings")
                   ? "bg-blue-600 text-white px-3 py-3 rounded-lg"
                   : "hover:bg-gray-100 px-3 py-3 rounded-lg"
