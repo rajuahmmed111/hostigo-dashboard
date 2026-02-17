@@ -1,4 +1,4 @@
-import { ConfigProvider, Modal, Table, Pagination } from "antd";
+import { ConfigProvider, Modal, Table, Pagination, Select } from "antd";
 import { useMemo, useState, useEffect } from "react";
 import { IoSearch, IoChevronBack } from "react-icons/io5";
 import { MdBlock } from "react-icons/md";
@@ -15,6 +15,7 @@ function UserDetails() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [selectedRole, setSelectedRole] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
@@ -28,11 +29,17 @@ function UserDetails() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
+  // Reset to first page when role changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedRole]);
+
   // API call to get all users with pagination and search
   const { data: usersData, isLoading } = useGetAllUsersPaginatedQuery({
     page: currentPage,
     limit: pageSize,
     ...(debouncedSearch && { searchTerm: debouncedSearch }),
+    ...(selectedRole && { role: selectedRole }),
   });
   const [blockUser, { isLoading: isBlocking }] = useBlockUserMutation();
   const handleCancel = () => {
@@ -106,8 +113,8 @@ function UserDetails() {
             status === "ACTIVE"
               ? "bg-green-100 text-green-800"
               : status === "INACTIVE"
-              ? "bg-red-100 text-red-800"
-              : "bg-gray-100 text-gray-800"
+                ? "bg-red-100 text-red-800"
+                : "bg-gray-100 text-gray-800"
           }`}
         >
           {status}
@@ -186,9 +193,21 @@ function UserDetails() {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search users..."
-            className="w-full bg-white text-[#0D0D0D] placeholder-gray-500 pl-10 pr-3 py-2 rounded-md focus:outline-none"
+            className="w-full bg-white text-[#0D0D0D] placeholder-gray-500 pl-10 pr-3 py-2 rounded-md focus:outline-none mb-2"
           />
           <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+          <Select
+            placeholder="Filter by Role"
+            value={selectedRole}
+            onChange={setSelectedRole}
+            allowClear
+            className="w-full mt-2"
+            options={[
+              { value: "USER", label: "User" },
+              { value: "PROPERTY_OWNER", label: "Property Owner" },
+              { value: "SERVICE_PROVIDER", label: "Service Provider" },
+            ]}
+          />
         </div>
         <div className="ml-0 md:ml-auto flex items-center gap-2 w-full md:w-auto mt-2 md:mt-0">
           <div className="relative hidden md:block">
@@ -201,6 +220,18 @@ function UserDetails() {
             />
             <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-[#111827]" />
           </div>
+          <Select
+            placeholder="Filter by Role"
+            value={selectedRole}
+            onChange={setSelectedRole}
+            allowClear
+            className="w-40"
+            options={[
+              { value: "USER", label: "User" },
+              { value: "PROPERTY_OWNER", label: "Property Owner" },
+              { value: "SERVICE_PROVIDER", label: "Service Provider" },
+            ]}
+          />
         </div>
       </div>
 
@@ -349,8 +380,8 @@ function UserDetails() {
                         selectedUser.status === "ACTIVE"
                           ? "bg-green-100 text-green-800"
                           : selectedUser.status === "INACTIVE"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-gray-100 text-gray-800"
+                            ? "bg-red-100 text-red-800"
+                            : "bg-gray-100 text-gray-800"
                       }`}
                     >
                       {selectedUser.status}

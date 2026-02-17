@@ -3,18 +3,6 @@ import { baseApi } from "../baseUrl";
 // user management api
 export const userManagementApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    // get users
-    getAllUsers: builder.query({
-      query: (params = "") => ({
-        url: `/users${params}`,
-        method: "GET",
-        headers: {
-          Authorization: `${localStorage.getItem("accessToken")}`,
-        },
-      }),
-      providesTags: ["User"],
-    }),
-
     // get users with pagination
     getAllUsersPaginated: builder.query({
       query: ({ page = 1, limit = 10, role, status, searchTerm }) => {
