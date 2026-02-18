@@ -8,7 +8,7 @@ import { IoCloseSharp, IoLogOutOutline } from "react-icons/io5";
 import { MdAdminPanelSettings } from "react-icons/md";
 import { BiChat } from "react-icons/bi";
 
-import { BsCurrencyDollar, BsCreditCard, BsCheckCircle } from "react-icons/bs";
+import { BsCurrencyDollar, BsCreditCard } from "react-icons/bs";
 import { FaQuestion } from "react-icons/fa";
 import { logout } from "../../redux/features/auth/authSlice";
 import { useLogoutMutation } from "../../redux/api/authApi";
@@ -117,7 +117,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
           </Link>
 
           {/* show provider verify request */}
-          <Link to="/verify-request" onClick={handleLinkClick}>
+          {/* <Link to="/verify-request" onClick={handleLinkClick}>
             <li
               className={`flex items-center gap-2 mt-2 cursor-pointer transition-all duration-300 ease-in-out ${
                 isActive("/verify-request")
@@ -128,7 +128,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
               <BsCheckCircle className="w-5 h-5" />
               <p className="text-lg font-semibold">Verify Request</p>
             </li>
-          </Link>
+          </Link> */}
 
           {/* Earnings */}
           <Link to="/earnings" onClick={handleLinkClick}>

@@ -21,11 +21,10 @@ import Categories from "../pages/Categories/Categories";
 import Earnings from "../pages/Earnings/Earnings";
 import Notifications from "../pages/Notifications/Notifications";
 import Subscriptions from "../pages/subscriptions/Subscriptions";
-import Chat from "../pages/chat/Chat";
-import VerifyRequest from "../pages/VerifyRequest/VerifyRequest";
 import SubscriptionPlans from "../pages/Subscription Plans/SubscriptionPlans";
 import AddSubscriptionPlan from "../pages/Subscription Plans/AddSubscriptionPlan";
 import FAQ from "../pages/FAQ/FAQ";
+import Chat from "../pages/Chat/Chat";
 
 const router = createBrowserRouter([
   {
@@ -132,10 +131,7 @@ const router = createBrowserRouter([
         path: "/chat",
         element: <Chat />,
       },
-      {
-        path: "/verify-request",
-        element: <VerifyRequest />,
-      },
+
       {
         path: "/faq",
         element: <FAQ />,
