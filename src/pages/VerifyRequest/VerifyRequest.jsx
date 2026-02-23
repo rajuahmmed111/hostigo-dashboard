@@ -299,29 +299,34 @@ function VerifyRequest() {
             </div>
 
             {/* Passport/NID Documents Section */}
-            {selectedProvider.originalData?.passportOrNID && 
-             selectedProvider.originalData.passportOrNID.length > 0 && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Passport/NID Documents
-                </label>
-                <div className="grid grid-cols-2 gap-4">
-                  {selectedProvider.originalData.passportOrNID.map((doc, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg p-2">
-                      <img
-                        src={doc}
-                        alt={`Document ${index + 1}`}
-                        className="w-full h-48 object-cover rounded cursor-pointer"
-                        onClick={() => window.open(doc, '_blank')}
-                      />
-                      <p className="text-xs text-gray-600 mt-1 text-center">
-                        Document {index + 1}
-                      </p>
-                    </div>
-                  ))}
+            {selectedProvider.originalData?.passportOrNID &&
+              selectedProvider.originalData.passportOrNID.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Passport/NID Documents
+                  </label>
+                  <div className="grid grid-cols-2 gap-4">
+                    {selectedProvider.originalData.passportOrNID.map(
+                      (doc, index) => (
+                        <div
+                          key={index}
+                          className="border border-gray-200 rounded-lg p-2"
+                        >
+                          <img
+                            src={doc}
+                            alt={`Document ${index + 1}`}
+                            className="w-full h-48 object-cover rounded cursor-pointer"
+                            onClick={() => window.open(doc, "_blank")}
+                          />
+                          <p className="text-xs text-gray-600 mt-1 text-center">
+                            Document {index + 1}
+                          </p>
+                        </div>
+                      ),
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
           </div>
         )}
       </Modal>
