@@ -244,7 +244,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
         </ul>
 
         {/* Logout Button */}
-        <div className="absolute mt-8 md:mt-20 mmd:mt-20 w-full px-5 text-blue-600">
+        <div className="absolute mt-8 md:mt-20 mmd:mt-20 w-full px-5 text-blue-600 bottom-8 pb-4">
           <Link to="/sign-in">
             <button
               onClick={handleLogout}
