@@ -25,6 +25,7 @@ import SubscriptionPlans from "../pages/Subscription Plans/SubscriptionPlans";
 import AddSubscriptionPlan from "../pages/Subscription Plans/AddSubscriptionPlan";
 import FAQ from "../pages/FAQ/FAQ";
 import Chat from "../pages/Chat/Chat";
+import VerifyRequest from "../pages/VerifyRequest/VerifyRequest";
 
 const router = createBrowserRouter([
   {
@@ -135,6 +136,10 @@ const router = createBrowserRouter([
       {
         path: "/faq",
         element: <FAQ />,
+      },
+      {
+        path: "/verify-request",
+        element: <VerifyRequest />,
       },
     ],
   },
