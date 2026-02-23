@@ -15,27 +15,28 @@ export const verifyProviderApi = baseApi.injectEndpoints({
       providesTags: ["Provider"],
     }),
 
-    // get single provider
-    getSingleProvider: builder.query({
-      query: (id) => ({
-        url: `/users/${id}`,
-        method: "GET",
-        headers: {
-          Authorization: `${localStorage.getItem("accessToken")}`,
-        },
-      }),
-      providesTags: ["Provider"],
-    }),
-
-    // update status
-    updateStatus: builder.mutation({
-      query: ({ id, ...faqData }) => ({
-        url: `/users/${id}`,
+    // update status (inactive to active)
+    inactiveToActive: builder.mutation({
+      query: ({ id }) => ({
+        url: `/users/update-user-status-active/${id}`,
         method: "PATCH",
         headers: {
           Authorization: `${localStorage.getItem("accessToken")}`,
         },
-        body: faqData,
+        // body: { status: "active" },
+      }),
+      invalidatesTags: ["Provider"],
+    }),
+
+    // update status (inactive to rejected)
+    inactiveToRejected: builder.mutation({
+      query: ({ id }) => ({
+        url: `/users/update-user-status-rejected/${id}`,
+        method: "PATCH",
+        headers: {
+          Authorization: `${localStorage.getItem("accessToken")}`,
+        },
+        // body: { status: "active" },
       }),
       invalidatesTags: ["Provider"],
     }),
@@ -44,6 +45,6 @@ export const verifyProviderApi = baseApi.injectEndpoints({
 
 export const {
   useGetAllVerifyProviderRequestsQuery,
-  useGetSingleProviderQuery,
-  useUpdateStatusMutation,
+  useInactiveToActiveMutation,
+  useInactiveToRejectedMutation,
 } = verifyProviderApi;

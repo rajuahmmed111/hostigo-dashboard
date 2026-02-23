@@ -1,11 +1,12 @@
-import { ConfigProvider, Modal, Table, Button } from "antd";
+import { ConfigProvider, Modal, Table, Button, message } from "antd";
 import { useMemo, useState } from "react";
 import { IoChevronBack, IoCheckmark, IoClose } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import { FiEye } from "react-icons/fi";
 import {
   useGetAllVerifyProviderRequestsQuery,
-  useUpdateStatusMutation,
+  useInactiveToActiveMutation,
+  useInactiveToRejectedMutation,
 } from "../../redux/api/verifyProvider";
 
 function VerifyRequest() {
@@ -20,9 +21,10 @@ function VerifyRequest() {
     refetch,
   } = useGetAllVerifyProviderRequestsQuery();
 
-  console.log("providersData", providersData);
-
-  const [updateStatus, { isLoading: isUpdating }] = useUpdateStatusMutation();
+  const [updateStatus, { isLoading: isUpdating }] =
+    useInactiveToActiveMutation();
+  const [rejectStatus, { isLoading: isRejecting }] =
+    useInactiveToRejectedMutation();
 
   const handleCancel = () => {
     setIsModalOpen(false);
@@ -122,7 +124,7 @@ function VerifyRequest() {
           <button
             className=""
             onClick={() => handleReject(record)}
-            disabled={isUpdating}
+            disabled={isRejecting}
           >
             <IoClose className="h-5 w-5 text-red-600 cursor-pointer rounded-md" />
           </button>
@@ -135,23 +137,25 @@ function VerifyRequest() {
     try {
       await updateStatus({
         id: record.originalData.id,
-        status: "ACTIVE",
       }).unwrap();
+      message.success("Provider approved successfully!");
       refetch();
     } catch (error) {
       console.error("Failed to approve provider:", error);
+      message.error("Failed to approve provider. Please try again.");
     }
   };
 
   const handleReject = async (record) => {
     try {
-      await updateStatus({
+      await rejectStatus({
         id: record.originalData.id,
-        status: "REJECTED",
       }).unwrap();
+      message.success("Provider rejected successfully!");
       refetch();
     } catch (error) {
       console.error("Failed to reject provider:", error);
+      message.error("Failed to reject provider. Please try again.");
     }
   };
 
@@ -226,7 +230,7 @@ function VerifyRequest() {
             key="reject"
             danger
             onClick={() => handleReject(selectedProvider)}
-            loading={isUpdating}
+            loading={isRejecting}
           >
             Reject
           </Button>,
