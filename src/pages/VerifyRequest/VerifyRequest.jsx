@@ -1,4 +1,4 @@
-import { ConfigProvider, Modal, Table, Button, message } from "antd";
+import { ConfigProvider, Modal, Table, Button, message, Spin, Pagination } from "antd";
 import { useMemo, useState } from "react";
 import { IoChevronBack, IoCheckmark, IoClose } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
@@ -13,13 +13,18 @@ function VerifyRequest() {
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // API call to get all verify provider requests
   const {
     data: providersData,
     isLoading,
     refetch,
-  } = useGetAllVerifyProviderRequestsQuery();
+  } = useGetAllVerifyProviderRequestsQuery({
+    page: currentPage,
+    limit: pageSize,
+  });
 
   const [updateStatus, { isLoading: isUpdating }] =
     useInactiveToActiveMutation();
@@ -119,14 +124,22 @@ function VerifyRequest() {
             onClick={() => handleApprove(record)}
             disabled={isUpdating}
           >
-            <IoCheckmark className="h-5 w-5 text-green-600 cursor-pointer rounded-md" />
+            {isUpdating ? (
+              <Spin size="small" className="text-green-600" />
+            ) : (
+              <IoCheckmark className="h-5 w-5 text-green-600 cursor-pointer rounded-md" />
+            )}
           </button>
           <button
             className=""
             onClick={() => handleReject(record)}
             disabled={isRejecting}
           >
-            <IoClose className="h-5 w-5 text-red-600 cursor-pointer rounded-md" />
+            {isRejecting ? (
+              <Spin size="small" className="text-red-600" />
+            ) : (
+              <IoClose className="h-5 w-5 text-red-600 cursor-pointer rounded-md" />
+            )}
           </button>
         </div>
       ),
@@ -139,6 +152,8 @@ function VerifyRequest() {
         id: record.originalData.id,
       }).unwrap();
       message.success("Provider approved successfully!");
+      setIsModalOpen(false);
+      setSelectedProvider(null);
       refetch();
     } catch (error) {
       console.error("Failed to approve provider:", error);
@@ -152,11 +167,29 @@ function VerifyRequest() {
         id: record.originalData.id,
       }).unwrap();
       message.success("Provider rejected successfully!");
+      setIsModalOpen(false);
+      setSelectedProvider(null);
       refetch();
     } catch (error) {
       console.error("Failed to reject provider:", error);
       message.error("Failed to reject provider. Please try again.");
     }
+  };
+
+  // Pagination handlers
+  const handlePageChange = (page, size) => {
+    setCurrentPage(page);
+    if (size !== pageSize) {
+      setPageSize(size);
+      setCurrentPage(1);
+    }
+  };
+
+  // Get pagination meta from API response
+  const paginationMeta = providersData?.data?.meta || {
+    page: 1,
+    limit: 10,
+    total: 0,
   };
 
   return (
@@ -206,6 +239,22 @@ function VerifyRequest() {
           scroll={{ x: "max-content" }}
           rowClassName="hover:bg-gray-50 cursor-pointer"
         />
+
+        {/* Custom Pagination */}
+        <div className="flex justify-end mt-4">
+          <Pagination
+            current={paginationMeta.page}
+            total={paginationMeta.total}
+            pageSize={paginationMeta.limit}
+            onChange={handlePageChange}
+            showSizeChanger
+            showQuickJumper
+            showTotal={(total, range) =>
+              `${range[0]}-${range[1]} of ${total} items`
+            }
+            pageSizeOptions={["10", "20", "50", "100"]}
+          />
+        </div>
       </ConfigProvider>
 
       {/* View Modal */}

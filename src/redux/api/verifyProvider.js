@@ -5,13 +5,20 @@ export const verifyProviderApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // get all verify provider requests
     getAllVerifyProviderRequests: builder.query({
-      query: () => ({
-        url: "/users/inactive/service-providers",
-        method: "GET",
-        headers: {
-          Authorization: `${localStorage.getItem("accessToken")}`,
-        },
-      }),
+      query: ({ page = 1, limit = 10 }) => {
+        const queryParams = new URLSearchParams({
+          page: page.toString(),
+          limit: limit.toString(),
+        });
+
+        return {
+          url: `/users/inactive/service-providers?${queryParams.toString()}`,
+          method: "GET",
+          headers: {
+            Authorization: `${localStorage.getItem("accessToken")}`,
+          },
+        };
+      },
       providesTags: ["Provider"],
     }),
 
