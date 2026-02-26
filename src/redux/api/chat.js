@@ -16,13 +16,14 @@ export const adminChannelsApi = baseApi.injectEndpoints({
 
     // get all message by the channel name
     getAllMessageByChannelName: builder.query({
-      query: (channelName) => ({
-        url: `/messages/get-message/${channelName}`,
+      query: ({ channelName, page = 1, limit = 20 }) => ({
+        url: `/messages/get-message/${channelName}?page=${page}&limit=${limit}`,
         method: "GET",
         headers: {
           Authorization: `${localStorage.getItem("accessToken")}`,
         },
       }),
+      providesTags: ["AdminChannels"],
     }),
   }),
 });

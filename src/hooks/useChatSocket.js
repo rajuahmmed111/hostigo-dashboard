@@ -1,16 +1,23 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-empty */
 import { useEffect, useRef, useState } from "react";
-import {wsUrl} from "../config/envConfig";
+import { wsUrl } from "../config/envConfig";
 
 export default function useChatSocket(channelName, senderId) {
   const socketRef = useRef(null);
   const [messages, setMessages] = useState([]);
 
   useEffect(() => {
-    // If there's no valid channel, don't open a socket
+    // if there's no channel, don't open a socket
     if (!channelName) {
-      // Ensure any existing socket is closed when channel becomes falsy
-      if (socketRef.current && socketRef.current.readyState !== WebSocket.CLOSED) {
-        try { socketRef.current.close(); } catch (_) {}
+      // ensure any existing socket is closed when channel becomes falsy
+      if (
+        socketRef.current &&
+        socketRef.current.readyState !== WebSocket.CLOSED
+      ) {
+        try {
+          socketRef.current.close();
+        } catch (_) {}
       }
       return;
     }
@@ -38,15 +45,41 @@ export default function useChatSocket(channelName, senderId) {
         const data = JSON.parse(event.data);
         console.log("📥 Incoming WS message:", data);
 
-        // Case 1: Standard shape { type: 'message', data: {...} }
-        if (data?.type === "message" && data?.data) {
-          setMessages((prev) => [...prev, data.data]);
+        // handle subscription confirmation
+        if (data?.type === "subscribe" || data?.type === "subscribed") {
+          console.log(
+            `✅ Successfully subscribed to channel: ${data.channelName}`,
+          );
           return;
         }
 
-        // Case 2: JSON with a 'message' field directly
-        if (typeof data?.message !== "undefined") {
-          const normalized = {
+        // handle incoming messages
+        if (data?.type === "message" && data?.channelName === channelName) {
+          console.log("🎯 Processing message for current channel:", data);
+          const messageData = {
+            id: data.id || `ws-${Date.now()}`,
+            text: data.message || "",
+            files: Array.isArray(data.files) ? data.files : [],
+            createdAt: data.createdAt || new Date().toISOString(),
+            senderId: data.senderId || senderId,
+            channelName: data.channelName || channelName,
+            sender: data.sender || undefined,
+          };
+          console.log("📝 Adding message to state:", messageData);
+          setMessages((prev) => [...prev, messageData]);
+          return;
+        }
+
+        // handle messages with direct message field
+        if (
+          typeof data?.message !== "undefined" &&
+          data?.channelName === channelName
+        ) {
+          console.log(
+            "🎯 Processing direct message for current channel:",
+            data,
+          );
+          const messageData = {
             id: data.id || `ws-${Date.now()}`,
             message: data.message ?? "",
             files: Array.isArray(data.files) ? data.files : [],
@@ -55,16 +88,25 @@ export default function useChatSocket(channelName, senderId) {
             channelName: data.channelName || channelName,
             sender: data.sender || undefined,
           };
-          setMessages((prev) => [...prev, normalized]);
+          console.log("📝 Adding direct message to state:", messageData);
+          setMessages((prev) => [...prev, messageData]);
           return;
         }
+
+        // Log unhandled messages for debugging
+        console.log("❌ Unhandled message type or wrong channel:", {
+          type: data?.type,
+          channelName: data?.channelName,
+          expectedChannel: channelName,
+          data,
+        });
 
         // Otherwise ignore control or unknown payloads
       } catch (err) {
         // Case 3: Non-JSON payload, treat as plain text message
         const text = String(event.data ?? "");
-        if (text) {
-          const normalized = {
+        if (text && text.trim()) {
+          const messageData = {
             id: `ws-${Date.now()}`,
             message: text,
             files: [],
@@ -72,7 +114,7 @@ export default function useChatSocket(channelName, senderId) {
             senderId,
             channelName,
           };
-          setMessages((prev) => [...prev, normalized]);
+          setMessages((prev) => [...prev, messageData]);
         } else {
           console.error("❌ Failed to parse WS message:", event.data, err);
         }
@@ -91,15 +133,22 @@ export default function useChatSocket(channelName, senderId) {
     return () => {
       const rs = socketRef.current?.readyState;
       if (rs === WebSocket.OPEN || rs === WebSocket.CONNECTING) {
-        try { socketRef.current.close(); } catch (_) {}
+        try {
+          socketRef.current.close();
+        } catch (_) {}
       }
     };
-  }, [channelName]);
+  }, [channelName, senderId]);
 
   // send message via socket
   const sendMessage = (message, file = null) => {
     if (!socketRef.current || socketRef.current.readyState !== WebSocket.OPEN) {
       console.warn("⚠️ WebSocket not open, message not sent");
+      return;
+    }
+
+    if (!senderId) {
+      console.error("❌ senderId is required but not provided");
       return;
     }
 

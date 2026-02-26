@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useSelector } from "react-redux";
 import { AiOutlineSearch } from "react-icons/ai";
 import { RiSendPlane2Fill } from "react-icons/ri";
 import { FiMenu, FiMoreVertical, FiMessageSquare } from "react-icons/fi";
@@ -11,7 +12,29 @@ import {
 import useChatSocket from "../../hooks/useChatSocket";
 
 const Chat = () => {
-  const currentUserId = localStorage.getItem("userId");
+  const { token } = useSelector((state) => state.auth);
+
+  // get senderId from JWT token
+  const getSenderId = () => {
+    if (!token) return null;
+
+    try {
+      const payload = token.split(".")[1];
+      if (!payload) return null;
+
+      // decode base64 payload
+      const decodedPayload = JSON.parse(atob(payload));
+
+      // return ID from token
+      return decodedPayload.id || decodedPayload.userId || decodedPayload._id;
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      return null;
+    }
+  };
+
+  const currentUserId = getSenderId();
+  // console.log("Current userId from token:", currentUserId);
 
   const {
     data: channelsData,
@@ -53,33 +76,71 @@ const Chat = () => {
   const [newMessage, setNewMessage] = useState("");
   const [showSidebar, setShowSidebar] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
   const fileInputRef = useRef(null);
 
   // webSocket connection for real-time messaging
-  const socketMessages = useChatSocket(
-    selectedUser?.channelName,
-    currentUserId
-  );
+  const { messages: socketMessages, sendMessage: sendWebSocketMessage } =
+    useChatSocket(selectedUser?.channelName, currentUserId);
 
   // fetch existing messages when channel is selected
   const {
     data: messagesData,
     isLoading: messagesLoading,
     error: messagesError,
-  } = useGetAllMessageByChannelNameQuery(selectedUser?.channelName, {
-    skip: !selectedUser?.channelName,
-  });
+  } = useGetAllMessageByChannelNameQuery(
+    {
+      channelName: selectedUser?.channelName,
+      page: currentPage,
+      limit: 20,
+    },
+    {
+      skip: !selectedUser?.channelName,
+    },
+  );
   console.log(messagesData, "messagesData");
+
+  // reset pagination when channel changes
+  useEffect(() => {
+    if (selectedUser?.channelName) {
+      setCurrentPage(1);
+      setMessages([]);
+      setHasMore(true);
+    }
+  }, [selectedUser?.channelName]);
 
   // update messages when new socket messages arrive
   useEffect(() => {
     if (socketMessages && socketMessages.length > 0) {
-      setMessages(socketMessages);
-    }
-  }, [socketMessages]);
+      // socket messages to match UI structure
+      const transformedSocketMessages = socketMessages.map((msg) => ({
+        id: msg.id,
+        text: msg.text || msg.message,
+        sender: msg.senderId === currentUserId ? "me" : "other",
+        time: new Date(msg.createdAt).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        senderInfo: msg.sender,
+      }));
 
-  // Transform API messages to match UI structure
+      // Append new socket messages to existing messages (don't replace)
+      setMessages((prev) => {
+        // Filter out any existing messages with the same ID to avoid duplicates
+        const existingIds = new Set(prev.map((msg) => msg.id));
+        const newMessages = transformedSocketMessages.filter(
+          (msg) => !existingIds.has(msg.id),
+        );
+        return [...prev, ...newMessages];
+      });
+    }
+  }, [socketMessages, currentUserId]);
+
+  // API messages to match UI structure
   const transformApiMessages = (apiMessages) => {
     if (!apiMessages || !Array.isArray(apiMessages)) return [];
 
@@ -97,14 +158,43 @@ const Chat = () => {
 
   // update messages when API data arrives
   useEffect(() => {
-    if (
-      (messagesData?.data?.data && !socketMessages) ||
-      socketMessages.length === 0
-    ) {
+    if (messagesData?.data?.data) {
       const transformedMessages = transformApiMessages(messagesData.data.data);
-      setMessages(transformedMessages);
+
+      if (currentPage === 1) {
+        // First page - replace all messages
+        setMessages(transformedMessages);
+      } else {
+        // Additional pages - prepend messages (for scroll to top loading)
+        setMessages((prev) => [...transformedMessages, ...prev]);
+      }
+
+      // Check if there are more pages using meta information
+      const meta = messagesData.data.meta;
+      if (meta) {
+        const total = meta.total || 0;
+        const limit = meta.limit || 20;
+        const page = meta.page || 1;
+        const totalPages = Math.ceil(total / limit);
+        setHasMore(page < totalPages);
+      }
     }
-  }, [messagesData, socketMessages]);
+  }, [messagesData, currentPage]);
+
+  // infinite scroll handler
+  const handleScroll = (e) => {
+    const { scrollTop } = e.target;
+    // Load more when scrolling to top (older messages)
+    if (scrollTop === 0 && hasMore && !isLoadingMore && !messagesLoading) {
+      loadMoreMessages();
+    }
+  };
+
+  const loadMoreMessages = () => {
+    setIsLoadingMore(true);
+    setCurrentPage((prev) => prev + 1);
+    setIsLoadingMore(false);
+  };
 
   useEffect(() => {
     if (users.length > 0 && !selectedUser) {
@@ -113,7 +203,7 @@ const Chat = () => {
   }, [users, selectedUser]);
 
   const filteredUsers = users.filter((user) =>
-    user.name.toLowerCase().includes(searchTerm.toLowerCase())
+    user.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const scrollToBottom = () => {
@@ -154,17 +244,10 @@ const Chat = () => {
 
   const sendMessage = () => {
     if (newMessage.trim() && selectedUser) {
-      const newMsg = {
-        id: Date.now(),
-        text: newMessage,
-        sender: "me",
-        time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        status: "sent",
-      };
-      setMessages((prev) => [...prev, newMsg]);
+      // Send message via WebSocket
+      sendWebSocketMessage(newMessage.trim());
+
+      // Clear input
       setNewMessage("");
     }
   };
@@ -173,24 +256,29 @@ const Chat = () => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
+      // add this message to the ui immediately
+      const tempMessage = {
+        id: `temp-${Date.now()}`,
+        text: newMessage.trim(),
+        sender: "me",
+        time: new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        senderInfo: {
+          id: currentUserId,
+          fullName: "Me",
+        },
+      };
+      setMessages((prev) => [...prev, tempMessage]);
     }
   };
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const newMsg = {
-        id: messages.length + 1,
-        text: `📎 ${file.name}`,
-        sender: "me",
-        time: new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-        status: "sent",
-        type: "file",
-      };
-      setMessages([...messages, newMsg]);
+      // Send file via WebSocket
+      sendWebSocketMessage(`📎 ${file.name}`, file);
     }
   };
   return (
@@ -302,7 +390,20 @@ const Chat = () => {
               </div>
 
               {/* Messages Area */}
-              <div className="flex-1 overflow-y-auto bg-gray-50 p-3 space-y-3">
+              <div
+                ref={messagesContainerRef}
+                onScroll={handleScroll}
+                className="flex-1 overflow-y-auto bg-gray-50 p-3 space-y-3"
+              >
+                {/* Loading indicator for older messages */}
+                {isLoadingMore && (
+                  <div className="flex justify-center py-2">
+                    <div className="text-gray-500 text-sm">
+                      Loading older messages...
+                    </div>
+                  </div>
+                )}
+
                 {messages.map((msg) => (
                   <div
                     key={msg.id}
