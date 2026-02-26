@@ -1,7 +1,6 @@
 /* eslint-disable react/prop-types */
 import { useNavigate } from "react-router-dom";
 import { IoMenu, IoNotificationsOutline } from "react-icons/io5";
-// import Chat from "../../pages/chat/Chat";
 import { useSelector } from "react-redux";
 import { useGetMyProfileQuery } from "../../redux/api/authApi";
 import { useGetAllNotificationsQuery } from "../../redux/api/notification";
@@ -17,8 +16,8 @@ const MainHeader = ({ toggleSidebar }) => {
     notificationsData?.data?.data?.filter((notif) => !notif.read).length || 0;
 
   return (
-    <div className="relative w-full px-5">
-      <header className="shadow-sm rounded-lg border border-[#E5E7EB] overflow-hidden">
+    <div className="sticky top-0 z-30 w-full px-5 py-3 bg-gray-50">
+      <header className="shadow-sm rounded-lg border border-[#E5E7EB] bg-white overflow-hidden">
         <div className="flex justify-between items-center px-5 md:px-10 h-[80px]">
           <button
             onClick={toggleSidebar}
@@ -44,7 +43,7 @@ const MainHeader = ({ toggleSidebar }) => {
             {/* Profile */}
             <div
               onClick={() => navigate("/profile")}
-              className="flex items-center gap-2 cursor-default cursor-pointer"
+              className="flex items-center gap-2 cursor-pointer"
             >
               <img
                 src={
@@ -69,33 +68,6 @@ const MainHeader = ({ toggleSidebar }) => {
           </div>
         </div>
       </header>
-
-      {/* Chat Overlay */}
-      {/* {showChat && (
-        <div
-          ref={chatRef}
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-          onClick={(e) => e.target === e.currentTarget && setShowChat(false)}
-        >
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl h-[80vh] flex flex-col overflow-hidden">
-            <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white p-4 flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Messages</h3>
-              <div className="flex items-center space-x-4">
-                <button
-                  onClick={() => setShowChat(false)}
-                  className="text-white hover:text-gray-200 focus:outline-none"
-                >
-                  <IoClose className="w-6 h-6" />
-                </button>
-              </div>
-            </div>
-
-            <div className="flex-1 overflow-hidden flex">
-              <Chat isEmbedded={true} />
-            </div>
-          </div>
-        </div>
-      )} */}
     </div>
   );
 };
