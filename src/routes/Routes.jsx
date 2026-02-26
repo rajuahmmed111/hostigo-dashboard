@@ -26,6 +26,7 @@ import AddSubscriptionPlan from "../pages/Subscription Plans/AddSubscriptionPlan
 import FAQ from "../pages/FAQ/FAQ";
 import Chat from "../pages/Chat/Chat";
 import VerifyRequest from "../pages/VerifyRequest/VerifyRequest";
+import PrivateRoute from "../shared/PrivateRoute/PrivateRoute";
 
 const router = createBrowserRouter([
   {
@@ -47,7 +48,11 @@ const router = createBrowserRouter([
 
   {
     path: "/",
-    element: <MainLayout />,
+    element: (
+      <PrivateRoute>
+        <MainLayout />
+      </PrivateRoute>
+    ),
     children: [
       {
         path: "/",
