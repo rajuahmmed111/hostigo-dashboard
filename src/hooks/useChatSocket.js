@@ -70,7 +70,17 @@ export default function useChatSocket(channelName, senderId) {
           return;
         }
 
-        // handle messages with direct message field
+        // Debug: Check why message is not being handled
+        if (data?.type === "message") {
+          console.log("🔍 Message type check failed:", {
+            receivedChannel: data?.channelName,
+            expectedChannel: channelName,
+            channelMatch: data?.channelName === channelName,
+            data,
+          });
+        }
+
+        // handle messages with direct message field (Postman style)
         if (
           typeof data?.message !== "undefined" &&
           data?.channelName === channelName
@@ -89,6 +99,30 @@ export default function useChatSocket(channelName, senderId) {
             sender: data.sender || undefined,
           };
           console.log("📝 Adding direct message to state:", messageData);
+          setMessages((prev) => [...prev, messageData]);
+          return;
+        }
+
+        // handle messages without type field (fallback for Postman)
+        if (
+          !data?.type &&
+          typeof data?.message !== "undefined" &&
+          data?.channelName === channelName
+        ) {
+          console.log(
+            "🎯 Processing message without type for current channel:",
+            data,
+          );
+          const messageData = {
+            id: data.id || `ws-${Date.now()}`,
+            message: data.message ?? "",
+            files: Array.isArray(data.files) ? data.files : [],
+            createdAt: data.createdAt || new Date().toISOString(),
+            senderId: data.senderId || senderId,
+            channelName: data.channelName || channelName,
+            sender: data.sender || undefined,
+          };
+          console.log("📝 Adding message without type to state:", messageData);
           setMessages((prev) => [...prev, messageData]);
           return;
         }
