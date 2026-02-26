@@ -39,7 +39,7 @@ const MainLayout = () => {
   };
 
   return (
-    <div className="flex min-h-screen relative overflow-hidden bg-gray-50">
+    <div className="flex min-h-screen relative bg-gray-50">
       {/* Mobile Overlay */}
       {isSidebarOpen && (
         <div
@@ -51,11 +51,11 @@ const MainLayout = () => {
       {/* Sidebar */}
       <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
       
-      {/* Main Content */}
-      <div className="flex flex-col w-full overflow-hidden">
+      {/* Main Content — pushed right by sidebar width on lg+ screens */}
+      <div className="flex flex-col w-full min-h-screen lg:ml-[280px] xl:ml-72">
         <MainHeader toggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
         <main className="flex-1 overflow-auto p-4 lg:p-6">
-          <div className="bg-white rounded-lg shadow-sm min-h-[calc(100vh-2rem)] p-4 lg:p-6">
+          <div className="bg-white rounded-lg shadow-sm min-h-[calc(100vh-5rem)] p-4 lg:p-6">
             <Outlet />
           </div>
         </main>
